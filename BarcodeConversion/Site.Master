@@ -1,4 +1,6 @@
-﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Site.master.cs" Inherits="BarcodeConversion.SiteMaster" %>
+﻿
+<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Site.master.cs" Inherits="BarcodeConversion.SiteMaster" %>
+
 
 <!DOCTYPE html>
 
@@ -15,10 +17,36 @@
     <webopt:bundlereference runat="server" path="~/Content/css" />
     <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
 
+    <style type="text/css">
+        .auto-style2 {
+            width: 284px;
+        }
+        .auto-style3 {
+            border-collapse: collapse;
+            width: 97%;
+            height: 107px;
+            margin-bottom: 20px;
+        }
+        .auto-style4 {
+            width: 311px;
+        }
+        .auto-style5 {
+            width: 28%;
+        }
+    </style>
+
+    <script>
+        function redirect() {
+            
+            location.href = 'Contact.aspx';
+        }
+    </script>
+
 </head>
 <body>
+
     <form runat="server">
-        <asp:ScriptManager runat="server">
+       <asp:ScriptManager runat="server">
             <Scripts>
                 <%--To learn more about bundling scripts in ScriptManager see https://go.microsoft.com/fwlink/?LinkID=301884 --%>
                 <%--Framework Scripts--%>
@@ -47,23 +75,25 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" runat="server" href="~/">Application name</a>
+                    <a class="navbar-brand" runat="server" href="~/">Barcode Indexing</a>
                 </div>
                 <div class="navbar-collapse collapse">
                     <ul class="nav navbar-nav">
                         <li><a runat="server" href="~/">Home</a></li>
-                        <li><a runat="server" href="~/About">About</a></li>
-                        <li><a runat="server" href="~/Contact">Contact</a></li>
+                        <li><a runat="server" href="~/About">Unprinted Indexes</a></li>
+                        <li><a Visible="false" runat="server" href="~/Contact">Contact</a></li>
+                        <li style="margin-left:500px;"><a id="settings" Visible="false" runat="server" href="~/Contact">Settings</a></li>
                     </ul>
                 </div>
             </div>
         </div>
         <div class="container body-content">
+
             <asp:ContentPlaceHolder ID="MainContent" runat="server">
             </asp:ContentPlaceHolder>
             <hr />
             <footer>
-                <p>&copy; <%: DateTime.Now.Year %> - My ASP.NET Application</p>
+              <%--<p>&copy; <%: DateTime.Now.Year %> - My ASP.NET Application</p> --%>
             </footer>
         </div>
 

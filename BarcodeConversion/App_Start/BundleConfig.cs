@@ -33,6 +33,9 @@ namespace BarcodeConversion
             // ready for production, use the build tool at https://modernizr.com to pick only the tests you need
             bundles.Add(new ScriptBundle("~/bundles/modernizr").Include(
                             "~/Scripts/modernizr-*"));
+            bundles.Add(new StyleBundle("~/Content/css").Include(
+                "~/Content/bootstrap-lumen.css",
+                "~/Content/site.css"));
 
             ScriptManager.ScriptResourceMapping.AddDefinition(
                 "respond",
