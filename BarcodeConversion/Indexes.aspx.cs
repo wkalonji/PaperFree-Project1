@@ -25,6 +25,8 @@ namespace BarcodeConversion
             {
                 getUnprintedIndexes_Click(new object(), new EventArgs());
             }
+            Control c = GetPostBackControl(this.Page);
+            if (c != null && c.ID == "getUnprintedIndexes") indexesGridView.PageIndex = 0;
         }
 
         // 'RESET' CLICKED: GET UNPRINTED INDEXES. FUCNTION
@@ -56,7 +58,6 @@ namespace BarcodeConversion
                 if (ds.Tables.Count > 0)
                 {
                     indexesGridView.DataSource = ds.Tables[0];
-                    //indexesGridView.AllowPaging = true;
                     indexesGridView.DataBind();
                 }
                 con.Close();
@@ -466,6 +467,43 @@ namespace BarcodeConversion
             {
                 return opID;
             }
+        }
+
+
+
+        // PREVENT LINE BREAKS IN GRIDVIEW
+        protected void rowDataBound(object sender, GridViewRowEventArgs e)
+        {
+            for (int i = 0; i < e.Row.Cells.Count; i++)
+            {
+                e.Row.Cells[i].Attributes.Add("style", "white-space: nowrap;");
+            }
+        }
+
+
+        // GET CONTROL THAT FIRED POSTBACK. HELPER FUNCTION.
+        public static Control GetPostBackControl(Page page)
+        {
+            Control control = null;
+
+            string ctrlname = page.Request.Params.Get("__EVENTTARGET");
+            if (ctrlname != null && ctrlname != string.Empty)
+            {
+                control = page.FindControl(ctrlname);
+            }
+            else
+            {
+                foreach (string ctl in page.Request.Form)
+                {
+                    Control c = page.FindControl(ctl);
+                    if (c is System.Web.UI.WebControls.Button)
+                    {
+                        control = c;
+                        break;
+                    }
+                }
+            }
+            return control;
         }
     }
 }

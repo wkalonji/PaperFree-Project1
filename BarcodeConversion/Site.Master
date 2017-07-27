@@ -35,13 +35,6 @@
         }
     </style>
 
-    <script>
-        function redirect() {
-            
-            location.href = 'Contact.aspx';
-        }
-    </script>
-
 </head>
 <body>
 
@@ -80,9 +73,9 @@
                 <div class="navbar-collapse collapse">
                     <ul class="nav navbar-nav">
                         <li><a runat="server" href="~/">Home</a></li>
-                        <li><a runat="server" href="~/About">Unprinted Indexes</a></li>
-                        <li><a Visible="false" runat="server" href="~/Contact">Contact</a></li>
-                        <li style="margin-left:500px;"><a id="settings" Visible="false" runat="server" href="~/Contact">Settings</a></li>
+                        <li><a runat="server" href="~/Indexes">Print Indexes</a></li>
+                        <li><a runat="server" href="~/IndexStatus">Index Status</a></li>
+                        <li style="margin-left:400px;"><a id="settings" Visible="false" runat="server" href="~/Settings">Settings</a></li>
                     </ul>
                 </div>
             </div>

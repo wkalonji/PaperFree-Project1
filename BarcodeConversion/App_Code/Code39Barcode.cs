@@ -9,7 +9,7 @@ using System.Web;
 namespace BarcodeConversion.App_Code
 {
 
-
+	// Not utilized
 	public enum BarcodeWeight
 	{
 		Small = 1,
@@ -17,10 +17,6 @@ namespace BarcodeConversion.App_Code
 		Large = 3
 	}
 
-	/// <summary>
-	/// An ASP.NET port of a WinForms User Control created by Rocky Pulley.
-	/// See http://www.codeproject.com/KB/miscctrl/Barcodectl.aspx for more details.
-	/// </summary>
 	public class Code39Barcode
 	{
 		#region Private Member Variables

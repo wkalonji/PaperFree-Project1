@@ -16,8 +16,8 @@ namespace BarcodeConversion
         SqlConnection con = new SqlConnection(@"Data Source=GLORY-PC\SQLEXPRESS;Initial Catalog=ImagePRO;Integrated Security=True");
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (!Page.IsPostBack)
-                jobAbb.Focus();
+            if (!Page.IsPostBack) jobAbb.Focus();
+            setDropdownColor(con);
         }
 
   
@@ -711,62 +711,137 @@ namespace BarcodeConversion
                 }
 
                 // Then, use that job ID to set job rules into JOB_CONFIG_INDEX 
-                SqlCommand cmd2 = new SqlCommand("INSERT INTO JOB_CONFIG_INDEX" +
+                try
+                {
+                    SqlCommand cmd2 = new SqlCommand("INSERT INTO JOB_CONFIG_INDEX" +
                     "(JOB_ID, LABEL1, REGEX1, LABEL2, REGEX2, LABEL3, REGEX3, LABEL4, REGEX4, LABEL5, REGEX5) " +
                     "VALUES(@jobID, @label1, @regex1, @label2, @regex2, @label3, @regex3, @label4, @regex4, @label5, @regex5)", con);
-                cmd2.Parameters.AddWithValue("@jobID", jobID);
-                cmd2.Parameters.AddWithValue("@label1", label1.Text);
-                if (regex1.Text == string.Empty) cmd2.Parameters.AddWithValue("@regex1", DBNull.Value);
-                else cmd2.Parameters.AddWithValue("@regex1", regex1.Text);
-                if (label2.Text == string.Empty) cmd2.Parameters.AddWithValue("@label2", DBNull.Value);
-                else cmd2.Parameters.AddWithValue("@label2", label2.Text);
-                if (regex2.Text == string.Empty) cmd2.Parameters.AddWithValue("@regex2", DBNull.Value);
-                else cmd2.Parameters.AddWithValue("@regex2", regex2.Text);
-                if (label3.Text == string.Empty) cmd2.Parameters.AddWithValue("@label3", DBNull.Value);
-                else cmd2.Parameters.AddWithValue("@label3", label3.Text);
-                if (regex3.Text == string.Empty) cmd2.Parameters.AddWithValue("@regex3", DBNull.Value);
-                else cmd2.Parameters.AddWithValue("@regex3", regex3.Text);
-                if (label4.Text == string.Empty) cmd2.Parameters.AddWithValue("@label4", DBNull.Value);
-                else cmd2.Parameters.AddWithValue("@label4", label4.Text);
-                if (regex4.Text == string.Empty) cmd2.Parameters.AddWithValue("@regex4", DBNull.Value);
-                else cmd2.Parameters.AddWithValue("@regex4", regex4.Text);
-                if (label5.Text == string.Empty) cmd2.Parameters.AddWithValue("@label5", DBNull.Value);
-                else cmd2.Parameters.AddWithValue("@label5", label5.Text);
-                if (regex5.Text == string.Empty) cmd2.Parameters.AddWithValue("@regex5", DBNull.Value);
-                else cmd2.Parameters.AddWithValue("@regex5", regex5.Text);
+                    cmd2.Parameters.AddWithValue("@jobID", jobID);
+                    cmd2.Parameters.AddWithValue("@label1", label1.Text);
+                    if (regex1.Text == string.Empty) cmd2.Parameters.AddWithValue("@regex1", DBNull.Value);
+                    else cmd2.Parameters.AddWithValue("@regex1", regex1.Text);
+                    if (label2.Text == string.Empty) cmd2.Parameters.AddWithValue("@label2", DBNull.Value);
+                    else cmd2.Parameters.AddWithValue("@label2", label2.Text);
+                    if (regex2.Text == string.Empty) cmd2.Parameters.AddWithValue("@regex2", DBNull.Value);
+                    else cmd2.Parameters.AddWithValue("@regex2", regex2.Text);
+                    if (label3.Text == string.Empty) cmd2.Parameters.AddWithValue("@label3", DBNull.Value);
+                    else cmd2.Parameters.AddWithValue("@label3", label3.Text);
+                    if (regex3.Text == string.Empty) cmd2.Parameters.AddWithValue("@regex3", DBNull.Value);
+                    else cmd2.Parameters.AddWithValue("@regex3", regex3.Text);
+                    if (label4.Text == string.Empty) cmd2.Parameters.AddWithValue("@label4", DBNull.Value);
+                    else cmd2.Parameters.AddWithValue("@label4", label4.Text);
+                    if (regex4.Text == string.Empty) cmd2.Parameters.AddWithValue("@regex4", DBNull.Value);
+                    else cmd2.Parameters.AddWithValue("@regex4", regex4.Text);
+                    if (label5.Text == string.Empty) cmd2.Parameters.AddWithValue("@label5", DBNull.Value);
+                    else cmd2.Parameters.AddWithValue("@label5", label5.Text);
+                    if (regex5.Text == string.Empty) cmd2.Parameters.AddWithValue("@regex5", DBNull.Value);
+                    else cmd2.Parameters.AddWithValue("@regex5", regex5.Text);
 
-                if (cmd2.ExecuteNonQuery() == 1)
-                {
-                    string msg = selectJob.SelectedValue + " Job rules successfully set.";
-                    ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
-                    con.Close();
-                    clearRules();
-                    return;
+                    if (cmd2.ExecuteNonQuery() == 1)
+                    {
+                        string msg = selectJob.SelectedValue + " Job rules successfully set.";
+                        ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                        con.Close();
+                        setDropdownColor(con);
+                        clearRules();
+                        return;
+                    }
+                    else
+                    {
+                        string msg = "Rules couln't be set. Please contact Tech support.";
+                        ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                        clearRules();
+                        con.Close();
+                    }
                 }
-                else
-                {
-                    string msg = "Rules couln't be set. Please contact Tech support.";
-                    ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                catch(SqlException ex) {
                     clearRules();
                     con.Close();
+                    string msg = " The job selected has already been configured. If you want to reconfigure, please Unset then Set again!";
+                    ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
                 }
+                
 
             }
         }
 
 
 
+        // 'UNSET' CLICKED: UNSET INPUT-CONTROLS RULES. FUNCTION.
         protected void unsetRules_Click(object sender, EventArgs e)
         {
-            
+            con.Open();
+            int jobID = 0;
 
+            // Make sure a job is selected & LABEL1 is filled.
+            if (this.selectJob.SelectedValue == "Select")
+            {
+                string msg = "Please select a specific job!";
+                ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                jobAbb.Text = string.Empty;
+                jobAbb.Focus();
+                return;
+            }
+            else
+            {   // First, get job ID of selected job
+                SqlCommand cmd = new SqlCommand("SELECT ID FROM JOB WHERE ABBREVIATION = @jobAbb", con);
+                cmd.Parameters.AddWithValue("@jobAbb", selectJob.SelectedValue);
+                SqlDataReader reader = cmd.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        jobID = (int)reader.GetValue(0);
+                    }
+                    reader.Close();
+                }
+                else
+                {
+                    string msg = "Job selected could not be found.";
+                    ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                    con.Close();
+                    selectJob.SelectedValue = "Select";
+                    return;
+                }
+
+                // Then, use that job ID to unset job rules into JOB_CONFIG_INDEX 
+                try
+                {
+                    SqlCommand cmd2 = new SqlCommand("DELETE FROM JOB_CONFIG_INDEX WHERE JOB_ID=@jobID", con);
+                    cmd2.Parameters.AddWithValue("@jobID", jobID);
+
+                    if (cmd2.ExecuteNonQuery() == 1)
+                    {
+                        string msg = selectJob.SelectedValue + " Job rules successfully unset.";
+                        ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                        con.Close();
+                        setDropdownColor(con);
+                        clearRules();
+                        return;
+                    }
+                    else
+                    {
+                        string msg = "Rules couln't be unset. Please contact system admin.";
+                        ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                        clearRules();
+                        con.Close();
+                    }
+                }
+                catch (SqlException ex)
+                {
+                    clearRules();
+                    con.Close();
+                    string msg = "Configuration rules for the selected job has already been unset. If you want to reconfigure, Make sure it's selected, then Set!";
+                    ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                }
+            }
         }
 
 
-        //--- HELPER FUNCTIONS ------------------------------------------------------------------------------------------------
+            //--- HELPER FUNCTIONS ------------------------------------------------------------------------------------------------
 
-        // COLLAPSE ALL SECTIONS. HELPER FUNCTION 
-        protected void collapseAll_Click(object sender, EventArgs e)
+            // COLLAPSE ALL SECTIONS. HELPER FUNCTION 
+            protected void collapseAll_Click(object sender, EventArgs e)
         {
             if (collapseAll.Text == "Collapse All")
             {
@@ -777,6 +852,7 @@ namespace BarcodeConversion
                 assignPanel.Visible = true;
                 jobIndexEditingPanel.Visible = true;
                 getDropdownJobItems();
+                line.Visible = true;
             }
             else
             {
@@ -785,6 +861,7 @@ namespace BarcodeConversion
                 newUserSection.Visible = false;
                 assignPanel.Visible = false;
                 jobIndexEditingPanel.Visible = false;
+                line.Visible = false;
             }
         }
 
@@ -884,7 +961,7 @@ namespace BarcodeConversion
                 return;
             }
 
-            // Get configured jobs, then Set background color in dropdown list.
+            // Get configured jobs, then Set color in dropdown list.
             con.Close();
             setDropdownColor(con);
         }

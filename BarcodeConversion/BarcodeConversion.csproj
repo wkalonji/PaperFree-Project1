@@ -126,8 +126,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="About.aspx" />
-    <Content Include="Contact.aspx" />
+    <Content Include="Content\calendar-blue.css" />
+    <Content Include="Content\calender.png" />
+    <Content Include="Indexes.aspx" />
+    <Content Include="IndexStatus.aspx" />
+    <Content Include="Scripts\calendar-en.min.js" />
+    <Content Include="Scripts\jquery.dynDateTime.min.js" />
+    <Content Include="Settings.aspx" />
     <Content Include="Content\Bootstrap-lumen.css" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
@@ -210,20 +215,27 @@
     <Content Include="App_Code\Code39Barcode.cs" />
     <Compile Include="App_Code\EntryControl.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
-    <Compile Include="About.aspx.cs">
-      <DependentUpon>About.aspx</DependentUpon>
+    <Compile Include="Indexes.aspx.cs">
+      <DependentUpon>Indexes.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="About.aspx.designer.cs">
-      <DependentUpon>About.aspx</DependentUpon>
+    <Compile Include="Indexes.aspx.designer.cs">
+      <DependentUpon>Indexes.aspx</DependentUpon>
     </Compile>
     <Compile Include="App_Start\RouteConfig.cs" />
-    <Compile Include="Contact.aspx.cs">
-      <DependentUpon>Contact.aspx</DependentUpon>
+    <Compile Include="IndexStatus.aspx.cs">
+      <DependentUpon>IndexStatus.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Contact.aspx.designer.cs">
-      <DependentUpon>Contact.aspx</DependentUpon>
+    <Compile Include="IndexStatus.aspx.designer.cs">
+      <DependentUpon>IndexStatus.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Settings.aspx.cs">
+      <DependentUpon>Settings.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Settings.aspx.designer.cs">
+      <DependentUpon>Settings.aspx</DependentUpon>
     </Compile>
     <Compile Include="Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>

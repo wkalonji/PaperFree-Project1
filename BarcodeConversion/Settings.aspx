@@ -1,8 +1,21 @@
-﻿<%@ Page Title="Contact" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Contact.aspx.cs" Inherits="BarcodeConversion.Contact" %>
+﻿<%@ Page Title="Settings" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Settings.aspx.cs" Inherits="BarcodeConversion.Contact" %>
 
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
 
-<div><h2 style="margin-top:35px; margin-bottom:20px;">Settings</h2></div>
+<div style="margin-top:45px; margin-bottom:40px; height:50px; border-bottom:solid 1px green;width:899px;">
+    <table>
+        <tr>
+            <td><h2 style="display:inline; padding-top:25px;">Settings</h2></td>
+            <td> 
+                <%-- COLLAPSE ALL--%>
+                <div style="display:block;margin-left:710px;padding-top:5px;">
+                    <asp:Button ID="collapseAll" Visible="true" Width="87px" runat="server" Text="Collapse All" OnClick="collapseAll_Click"/>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+
 <table>
 <tr>
 <td style="width:615px;">
@@ -17,12 +30,6 @@
      <%--USER & PERMISSION SECTION --%>
     <div style="width:284px; border: solid 2px black; border-radius:3px;">
         <asp:Button ID="newUserBtn" Visible="true" runat="server" Text="User & Permission Section" Width="310px" onclick="permissionsShow_Click" />
-    </div>
-</td>
-<td style=" text-align:right;">
-     <%-- COLLAPSE ALL--%>
-    <div style="display:block;margin-left:280px;">
-        <asp:Button ID="collapseAll" Visible="true" Width="87px" runat="server" Text="Collapse All" OnClick="collapseAll_Click"/>
     </div>
 </td>
 </tr>   
@@ -119,7 +126,11 @@
 </td>
 </tr>
 <tr>
-
+    <td colspan="2">
+         <div id="line" visible="false" style=" height:50px; border-bottom:solid 1px green;width:899px;" runat="server"></div>
+    </td>
+</tr>
+<tr>
 <td style="width: 615px">
     <%--JOB ACCESS SECTION --%>
     <div style="width:284px; border: solid 2px black; border-radius:3px; margin-bottom:25px;margin-top:50px;">
@@ -142,7 +153,7 @@
                 until configured.
             </h6>
         </asp:Label>
-        <table  style="margin-top:10px; height: 72px; width: 59%;"  class=auto-style3 >
+        <table  style="margin-top:10px; height: 72px; width: 51.5%;"  class=auto-style3 >
             <tr>
                 <td class="auto-style2" style="height: 31px"><asp:Label runat="server">Operator: </asp:Label></td>
                 <td style="height: 25px"><asp:TextBox ID="assignee" placeholder=" Required" onfocus="this.select()" runat="server"></asp:TextBox></td>
@@ -247,7 +258,7 @@
             </tr>
             <tr style="height:35px;">
                 <td><asp:Label Text="REGEX5:" runat="server"></asp:Label></td>
-                <td style="height: 25px; text-align:right;"><asp:TextBox ID="regex5" placeholder=" Optional" onfocus="this.select()" runat="server"></asp:TextBox></td>
+                <td style="height:25px; text-align:right;"><asp:TextBox ID="regex5" placeholder=" Optional" onfocus="this.select()" runat="server"></asp:TextBox></td>
             </tr>
         </table>
         <table style="margin-top:20px; margin-bottom:20px; width: 316px;">

@@ -97,20 +97,14 @@
                 </tr>
             </table>
             <div style="margin-bottom:20px">
-                <asp:CheckBox ID="chkShowText" runat="server" Checked="True" Text="Show index below barcode" TextAlign="right" />
+                <asp:CheckBox ID="chkShowText" Visible="false" runat="server" Checked="True" Text="Show index below barcode" TextAlign="right" />
             </div>
-            <div style="margin-bottom:25px">
+            <div style="margin-bottom:25px;margin-top:30px;">
                 <asp:Button ID="btnGenerateBarcode" runat="server" Text="Generate Index" onclick="btnGenerateBarcode_Click" />
             </div>
 
      <%--
-         Enter the text for the barcode:
-                <asp:TextBox ID="originaltxtBarcodeTxt" runat="server"></asp:TextBox>
-                <asp:RegularExpressionValidator ID="regexpBarcodeText" runat="server" 
-                    ControlToValidate="originaltxtBarcodeTxt" Display="Dynamic" 
-                    ErrorMessage="Invalid: May use 0-9, A-Z, -, ., $, /, +, %, or space only." 
-                    ForeColor="Red" SetFocusOnError="True" ValidationExpression="[0-9A-Z\-.$/+% ]*"></asp:RegularExpressionValidator>
-                 
+        Not utilized yet.
         <p>
             Barcode thickness:
             <asp:DropDownList ID="ddlBarcodeThickness" runat="server">
@@ -146,7 +140,7 @@
 
         <div style="margin-top:50px;"></div>
         <%--Link to Print Indexes page --%>     
-        <asp:HyperLink ID="HyperLink1" runat="server" NavigateUrl="~/About"><span style="font-size:medium;">View all of your unprinted indexes</span></asp:HyperLink>
+        <asp:HyperLink ID="HyperLink1" runat="server" NavigateUrl="~/Indexes"><span style="font-size:medium;">View all of your unprinted indexes</span></asp:HyperLink>
         <input id="indexString" type="hidden"  runat="server"  value=""/>
     </asp:Panel>
 

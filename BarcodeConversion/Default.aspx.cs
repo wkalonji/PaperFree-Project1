@@ -159,7 +159,7 @@ namespace BarcodeConversion
                     allEntriesConcat += entry.text;
                 }
                 string today = DateTime.Today.ToString("yyyyMMdd");
-                ViewState["allEntriesConcat"] = allEntriesConcat + today;
+                ViewState["allEntriesConcat"] = allEntriesConcat.ToUpper() + today;
             }
             var showTextValue = chkShowText.Checked ? "1" : "0";
             string indexString = (string)ViewState["allEntriesConcat"];

@@ -13,6 +13,15 @@ namespace BarcodeConversion {
     public partial class Contact {
         
         /// <summary>
+        /// collapseAll control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button collapseAll;
+        
+        /// <summary>
         /// newJobBtn control.
         /// </summary>
         /// <remarks>
@@ -29,15 +38,6 @@ namespace BarcodeConversion {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button newUserBtn;
-        
-        /// <summary>
-        /// collapseAll control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button collapseAll;
         
         /// <summary>
         /// jobSection control.
@@ -155,6 +155,15 @@ namespace BarcodeConversion {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button createBtn2;
+        
+        /// <summary>
+        /// line control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl line;
         
         /// <summary>
         /// assignBtn control.
