@@ -11,7 +11,7 @@ namespace BarcodeConversion
 
     public partial class _Default : Page
     {
-        SqlConnection con = new SqlConnection(@"Data Source=GLORY-PC\SQLEXPRESS;Initial Catalog=ImagePRO;Integrated Security=True");
+        SqlConnection con = Helper.ConnectionObj;
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -187,7 +187,7 @@ namespace BarcodeConversion
 
             // First, get current user id via name.
             string user = Environment.UserName;
-            int opID = getUserId(user, con);
+            int opID = Helper.getUserId(user, con);
             if (opID == 0)
             {
                 string msg = "Your name could not be found. Contact Tech Support";
@@ -367,7 +367,7 @@ namespace BarcodeConversion
 
 
             con.Open();
-            int opID = getUserId(user, con);
+            int opID = Helper.getUserId(user, con);
             if (opID == 0)
             {
                 string msg = "Your name could not be found, thus not allowed to use this product. Contact Tech Support";
@@ -466,31 +466,6 @@ namespace BarcodeConversion
         }
 
 
-
-        // GET USER ID VIA USERNAME. HELPER FUNCTION
-        private int getUserId(string user, SqlConnection con)
-        {
-            int opID = 0;
-            SqlCommand cmd = new SqlCommand("SELECT ID FROM OPERATOR WHERE NAME = @username", con);
-            cmd.Parameters.AddWithValue("@username", user);
-            SqlDataReader reader = cmd.ExecuteReader();
-            if (reader.HasRows)
-            {
-                while (reader.Read())
-                {
-                    opID = (int)reader.GetValue(0);
-                }
-                reader.Close();
-                return opID;
-            }
-            else
-            {
-                return opID;
-            }
-        }
-
-
-
         // GET JOB ID VIA SELECTED JOB ABBREV. HELPER FUNCITON
         private int getJobId(string jobAbb, SqlConnection con)
         {
@@ -512,6 +487,7 @@ namespace BarcodeConversion
                 return jobID;
             }
         }
+
 
         // CLEAR TEXT FIELDS. HELPER FUNCTION
         private void clearFields()

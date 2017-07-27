@@ -1,17 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 using System.Data.SqlClient;
-using System.Data;
-using System.Security.Principal;
+using BarcodeConversion.App_Code;
 
 namespace BarcodeConversion
 {
     public partial class SiteMaster : MasterPage
     {
+        SqlConnection con = Helper.ConnectionObj;
+
         protected void Page_Load(object sender, EventArgs e)
         {
             // SHOW 'SETTINGS' BUTTON IF ADMIN. IF NEW, SAVE USER.
@@ -22,9 +19,7 @@ namespace BarcodeConversion
                 if (user != null)
                 {   
                     // If user exists, get Admin status
-                    SqlConnection con = new SqlConnection(@"Data Source=GLORY-PC\SQLEXPRESS;Initial Catalog=ImagePRO;Integrated Security=True");
                     con.Open();
-
                     SqlCommand cmd = new SqlCommand("SELECT ADMIN FROM OPERATOR WHERE NAME = @user", con);
                     cmd.Parameters.AddWithValue("@user", user);
                     SqlDataReader reader = cmd.ExecuteReader();

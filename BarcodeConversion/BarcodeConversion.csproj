@@ -214,6 +214,7 @@
   <ItemGroup>
     <Content Include="App_Code\Code39Barcode.cs" />
     <Compile Include="App_Code\EntryControl.cs" />
+    <Compile Include="App_Code\Helper.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="Indexes.aspx.cs">
       <DependentUpon>Indexes.aspx</DependentUpon>

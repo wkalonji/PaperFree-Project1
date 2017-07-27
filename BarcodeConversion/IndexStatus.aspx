@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#"  MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="IndexStatus.aspx.cs" Inherits="BarcodeConversion.IndexStatus" %>
+﻿<%@ Page Title="Index Status" Language="C#"  MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="IndexStatus.aspx.cs" Inherits="BarcodeConversion.IndexStatus" %>
 
 
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
@@ -64,23 +64,23 @@
                 </tr>
             </table> 
             <asp:Panel ID="timePanel" Visible="false" runat="server">
-                <table class = "table" style="width:570px;">
+                <table class = "table" style="width:548px;">
                     <tr>
                         <td><asp:label runat="server">From:&nbsp;&nbsp;&nbsp;</asp:label>
                             <asp:TextBox ID="from" runat="server" ></asp:TextBox>
                             <img style="margin-left:2px;" src="Content/calender.png" /> 
                         </td>
-                        <td style="padding-left:25px;"><asp:label runat="server">To:&nbsp;&nbsp;</asp:label>
+                        <td style="padding-left:15px;"><asp:label runat="server">To:&nbsp;&nbsp;</asp:label>
                             <asp:TextBox ID="to" runat="server"></asp:TextBox>
                             <img style="margin-left:2px;" src="Content/calender.png" /> 
                         </td>
-                        <td style="padding-left:25px;">
+                        <td style="padding-left:15px;">
                             <asp:Button ID="dates" Text="Submit" runat="server" onclick="submit_Click" />
                         </td>
                     </tr>
                 </table>
             </asp:Panel>
-            <h3 style="margin-top:35px; color:blue"><asp:Label ID="description" Text="" Visible="false" runat="server"></asp:Label></h3>
+            <h4 style="margin-top:35px; color:blue"><asp:Label ID="description" Text="" Visible="false" runat="server"></asp:Label></h4>
             <asp:GridView ID="indexeStatusGridView" runat="server" style="margin-top:15px" CssClass="mydatagrid" PagerStyle-CssClass="pager"
                         PageSize="20" HeaderStyle-CssClass="header" RowStyle-CssClass="rows" AllowPaging="true" OnPageIndexChanging="pageChange_Click" OnRowDataBound="rowDataBound" > 
                 <columns>

@@ -7,13 +7,14 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Diagnostics;
 using System.Data;
+using BarcodeConversion.App_Code;
 
 namespace BarcodeConversion
 {
     public partial class Contact : Page
     {
+        SqlConnection con = Helper.ConnectionObj;
 
-        SqlConnection con = new SqlConnection(@"Data Source=GLORY-PC\SQLEXPRESS;Initial Catalog=ImagePRO;Integrated Security=True");
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!Page.IsPostBack) jobAbb.Focus();
@@ -297,10 +298,12 @@ namespace BarcodeConversion
             if (jobSection.Visible == false)
             {
                 jobSection.Visible = true;
+                line.Visible = true;
             }
             else
             {
                 jobSection.Visible = false;
+                if (newUserSection.Visible == false) line.Visible = false;
             }
         }
 
@@ -312,10 +315,12 @@ namespace BarcodeConversion
             if(newUserSection.Visible == false)
             {
                 newUserSection.Visible = true;
+                line.Visible = true;
             }
             else
             {
                 newUserSection.Visible = false;
+                if (jobSection.Visible == false) line.Visible = false;
             }          
         }
 

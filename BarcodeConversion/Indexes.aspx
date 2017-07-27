@@ -1,5 +1,5 @@
 ﻿
-<%@ Page Title="Indexes" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Indexes.aspx.cs" Inherits="BarcodeConversion.About" %>
+<%@ Page Title="Print Indexes" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Indexes.aspx.cs" Inherits="BarcodeConversion.About" %>
 
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
 
@@ -60,7 +60,7 @@
                 <tr><td colspan="2" style="padding-bottom:40px;"><asp:Button ID="getUnprintedIndexes" Visible="true" runat="server" Text="Reset" onclick="getUnprintedIndexes_Click" /></td></tr>
                 <tr>
                     <td>
-                        <h3 style="color:blue; display:inline"><asp:Label ID="description" Text="Your Unprinted Indexes" Visible="True" runat="server"></asp:Label></h3>
+                        <h4 style="color:blue; display:inline"><asp:Label ID="description" Text="Your Unprinted Indexes" Visible="True" runat="server"></asp:Label></h4>
                     </td>
                     <td style="text-align:right; vertical-align:central; padding-bottom:5px;">
                         <asp:Button ID="deleteBtn" Visible="false" runat="server" Text="Delete Indexes" 
@@ -70,7 +70,7 @@
                 </tr>                  
             </table>
         
-            <asp:GridView ID="indexesGridView" runat="server" style="margin-top:20px" CssClass="mydatagrid" PagerStyle-CssClass="pager"
+            <asp:GridView ID="indexesGridView" runat="server" style="margin-top:15px" CssClass="mydatagrid" PagerStyle-CssClass="pager"
                         PageSize="20" HeaderStyle-CssClass="header" RowStyle-CssClass="rows" AllowPaging="true" OnPageIndexChanging="pageChange_Click" OnRowDataBound="rowDataBound" > 
                 <columns>
                

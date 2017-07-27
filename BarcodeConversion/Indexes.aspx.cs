@@ -1,14 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.Diagnostics;
 using System.Data.SqlClient;
 using System.Data;
-using System.Drawing;
-using System.IO;
 using BarcodeConversion.App_Code;
 using System.Globalization;
 
@@ -16,8 +11,8 @@ namespace BarcodeConversion
 {
     public partial class About : Page
     {
+        SqlConnection con = Helper.ConnectionObj;
 
-        SqlConnection con = new SqlConnection(@"Data Source=GLORY-PC\SQLEXPRESS;Initial Catalog=ImagePRO;Integrated Security=True");
         protected void Page_Load(object sender, EventArgs e)
         {
             // Get unprinted indexes whenever page loads.
@@ -25,7 +20,7 @@ namespace BarcodeConversion
             {
                 getUnprintedIndexes_Click(new object(), new EventArgs());
             }
-            Control c = GetPostBackControl(this.Page);
+            Control c = Helper.GetPostBackControl(this.Page);
             if (c != null && c.ID == "getUnprintedIndexes") indexesGridView.PageIndex = 0;
         }
 
@@ -43,7 +38,7 @@ namespace BarcodeConversion
                 //Get unprinted indexes from DB
                 if (!Page.IsValid) return;
                 con.Open();
-                opID = getUserId(user, con);
+                opID = Helper.getUserId(user, con);
                 if (opID == 0)
                 {
                     string msg = "You could not be found in our system. Try again or contact system admin.";
@@ -141,7 +136,7 @@ namespace BarcodeConversion
 
                 // First, get current user ID
                 string user = Environment.UserName;
-                int opID = getUserId(user, con);
+                int opID = Helper.getUserId(user, con);
                 if (opID == 0)
                 {
                     string msg = "You could not be found in our system. Try again or contact system admin.";
@@ -426,6 +421,8 @@ namespace BarcodeConversion
             getUnprintedIndexes_Click(new object(), new EventArgs());
         }
 
+
+
         // SET PRINTED INDEXES AS PRINTED IN DB. HERLPER FUNCTION
         protected void setAsPrinted_Click(object sender, EventArgs e)
         {
@@ -439,36 +436,14 @@ namespace BarcodeConversion
             getUnprintedIndexes_Click(new object(), new EventArgs());
         }
 
+
+
         // HANDLE NEXT PAGE CLICK. FUNCTION
         protected void pageChange_Click(object sender, GridViewPageEventArgs e)
         {
             indexesGridView.PageIndex = e.NewPageIndex;
             getUnprintedIndexes_Click(new object(), new EventArgs());
         }
-
-
-        // GET USER ID VIA USERNAME. HELPER FUNCTION
-        private int getUserId(string user, SqlConnection con)
-        {
-            int opID = 0;
-            SqlCommand cmd = new SqlCommand("SELECT ID FROM OPERATOR WHERE NAME = @username", con);
-            cmd.Parameters.AddWithValue("@username", user);
-            SqlDataReader reader = cmd.ExecuteReader();
-            if(reader.HasRows)
-            {
-                while (reader.Read())
-                {
-                    opID = (int)reader.GetValue(0);
-                }
-                reader.Close();
-                return opID;
-            }
-            else
-            {
-                return opID;
-            }
-        }
-
 
 
         // PREVENT LINE BREAKS IN GRIDVIEW
@@ -478,32 +453,6 @@ namespace BarcodeConversion
             {
                 e.Row.Cells[i].Attributes.Add("style", "white-space: nowrap;");
             }
-        }
-
-
-        // GET CONTROL THAT FIRED POSTBACK. HELPER FUNCTION.
-        public static Control GetPostBackControl(Page page)
-        {
-            Control control = null;
-
-            string ctrlname = page.Request.Params.Get("__EVENTTARGET");
-            if (ctrlname != null && ctrlname != string.Empty)
-            {
-                control = page.FindControl(ctrlname);
-            }
-            else
-            {
-                foreach (string ctl in page.Request.Form)
-                {
-                    Control c = page.FindControl(ctl);
-                    if (c is System.Web.UI.WebControls.Button)
-                    {
-                        control = c;
-                        break;
-                    }
-                }
-            }
-            return control;
         }
     }
 }
