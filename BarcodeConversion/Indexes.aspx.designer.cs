@@ -31,13 +31,13 @@ namespace BarcodeConversion {
         protected global::System.Web.UI.WebControls.Button getUnprintedIndexes;
         
         /// <summary>
-        /// description control.
+        /// getBarcodeBtn control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label description;
+        protected global::System.Web.UI.WebControls.Button getBarcodeBtn;
         
         /// <summary>
         /// deleteBtn control.
@@ -49,24 +49,6 @@ namespace BarcodeConversion {
         protected global::System.Web.UI.WebControls.Button deleteBtn;
         
         /// <summary>
-        /// indexesGridView control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView indexesGridView;
-        
-        /// <summary>
-        /// getBarcodeBtn control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button getBarcodeBtn;
-        
-        /// <summary>
         /// printBarcodeBtn control.
         /// </summary>
         /// <remarks>
@@ -74,6 +56,51 @@ namespace BarcodeConversion {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button printBarcodeBtn;
+        
+        /// <summary>
+        /// description control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label description;
+        
+        /// <summary>
+        /// sortOrder control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label sortOrder;
+        
+        /// <summary>
+        /// recordsPerPageLabel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label recordsPerPageLabel;
+        
+        /// <summary>
+        /// recordsPerPage control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList recordsPerPage;
+        
+        /// <summary>
+        /// indexesGridView control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.GridView indexesGridView;
         
         /// <summary>
         /// setAsPrinted control.

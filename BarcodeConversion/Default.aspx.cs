@@ -140,7 +140,7 @@ namespace BarcodeConversion
         protected void btnGenerateBarcode_Click(object sender, EventArgs e)
         {
             if (!Page.IsValid) return;
-
+            indexSetPrintedMsg.Visible = false;
             // First, get list of all entries.
             string allEntriesConcat = string.Empty;
             List<EntryContent> allEntriesList = new List<EntryContent>();
@@ -158,7 +158,9 @@ namespace BarcodeConversion
                 {
                     allEntriesConcat += entry.text;
                 }
-                string today = DateTime.Today.ToString("yyyyMMdd");
+                string today = DateTime.Now.ToString("yyMMddHHmmssfff");
+
+                // Making the Index string 
                 ViewState["allEntriesConcat"] = allEntriesConcat.ToUpper() + today;
             }
             var showTextValue = chkShowText.Checked ? "1" : "0";
@@ -227,19 +229,31 @@ namespace BarcodeConversion
             cmd.Parameters.AddWithValue("@opId", opID);
             cmd.Parameters.AddWithValue("@time", DateTime.Now);
             cmd.Parameters.AddWithValue("@printed", 0);
-
-            if (cmd.ExecuteNonQuery() == 1) {
-                indexSavedMsg.Visible = true;
-                ClientScript.RegisterStartupScript(this.GetType(), "fadeoutOperation", "FadeOut();", true);
-                clearFields();
-                generateIndexSection.Visible = false;
-            }
-            else
+            try
             {
-                string msg = "Index string NOT saved. Try again or contact Tech support.";
-                ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                if (cmd.ExecuteNonQuery() == 1)
+                {
+                    indexSavedMsg.Visible = true;
+                    ClientScript.RegisterStartupScript(this.GetType(), "fadeoutOperation", "FadeOut();", true);
+                    clearFields();
+                    generateIndexSection.Visible = false;
+                }
+                else
+                {
+                    string msg = "Index string NOT saved. Try again or contact Tech support.";
+                    ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                }
+                con.Close();
             }
-            con.Close();
+            catch (Exception ex)
+            {   
+                if(ex.Message.Contains("Violation of UNIQUE KEY"))
+                {
+                    string msg = "The Index you are trying to save already exists! Click 'Generate Index' button to generate a new index.";
+                    ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                }
+            }
+            
         }
 
 

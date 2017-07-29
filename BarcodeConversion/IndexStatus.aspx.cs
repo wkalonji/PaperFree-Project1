@@ -23,7 +23,8 @@ namespace BarcodeConversion
             to.Attributes.Add("readonly", "readonly");
             // Reset gridview page
             Control c = Helper.GetPostBackControl(this.Page);
-            if (c != null && (c.ID == "reset" || c.ID == "whoFilter" || c.ID == "whenFilter" || c.ID == "whatFilter")) indexeStatusGridView.PageIndex = 0;
+            if (c != null && (c.ID == "reset" || c.ID == "whoFilter" || c.ID == "whenFilter" ||
+                c.ID == "whatFilter" || c.ID == "recordsPerPage")) indexeStatusGridView.PageIndex = 0;
         }
 
 
@@ -36,6 +37,7 @@ namespace BarcodeConversion
             whatFilter.SelectedValue = "allSheets";
             getIndexes("meOnly", "allTime", "allSheets");
             indexeStatusGridView.Visible = true;
+            sortOrder.Text = "Sorted By : CREATION_TIME ASC (Default)";
         }
 
 
@@ -58,7 +60,7 @@ namespace BarcodeConversion
             else
             {
                 timePanel.Visible = true;
-                description.Visible = false;
+                gridHeader.Visible = false;
                 indexeStatusGridView.Visible = false;
             }
         }
@@ -105,7 +107,7 @@ namespace BarcodeConversion
                 }
                 string cmdString =  "SELECT NAME, JOB_ID, BARCODE, CREATION_TIME, PRINTED " +
                                     "FROM INDEX_DATA " +
-                                    "INNER JOIN OPERATOR ON INDEX_DATA.OPERATOR_ID = OPERATOR.ID WHERE ";
+                                    "INNER JOIN OPERATOR ON INDEX_DATA.OPERATOR_ID=OPERATOR.ID WHERE ";
 
                 if(who == "meOnly")
                 {
@@ -228,6 +230,9 @@ namespace BarcodeConversion
                 da.Fill(ds);
                 if (ds.Tables.Count > 0)
                 {
+                    //Persist the table in the Session object.
+                    Session["TaskTable"] = ds.Tables[0];
+
                     indexeStatusGridView.DataSource = ds.Tables[0];
                     indexeStatusGridView.DataBind();
                 }
@@ -236,13 +241,15 @@ namespace BarcodeConversion
                 // Handling of whether any index was returned from DB
                 if (indexeStatusGridView.Rows.Count == 0)
                 {
-                    string noIndex = "No index records found.";
-                    ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + noIndex + "');", true);
-                    description.Text = "No indexes found within the specified dates.";
+                    description.Text = "No indexes found with the specified filter entries.";
+                    recordsPerPageLabel.Visible = false;
+                    recordsPerPage.Visible = false;
                 }
                 else
                 {
-                    description.Visible = true;
+                    gridHeader.Visible = true;
+                    recordsPerPageLabel.Visible = true;
+                    recordsPerPage.Visible = true;
                     indexeStatusGridView.Visible = true;
                 }
                 
@@ -273,7 +280,18 @@ namespace BarcodeConversion
                 }
             }
         }
-        
+
+
+
+
+        // RECORDS PER PAGE
+        protected void onSelectedRecordsPerPage(object sender, EventArgs e)
+        {
+            indexeStatusGridView.PageSize = Int32.Parse(recordsPerPage.SelectedValue);
+            getIndexes(whoFilter.SelectedValue, whenFilter.SelectedValue, whatFilter.SelectedValue);
+            sortOrder.Text = "Sorted By : CREATION_TIME ASC (Default)";
+        }
+
 
 
         // PREVENT LINE BREAKS IN GRIDVIEW
@@ -283,6 +301,63 @@ namespace BarcodeConversion
             {
                 e.Row.Cells[i].Attributes.Add("style", "white-space: nowrap;");
             }
+
+            // GIVE CUSTOM COLUMN NAMES
+            if (e.Row.RowType == DataControlRowType.Header)
+            {
+                //e.Row.Cells[1].Text = "OPERATOR";
+                //e.Row.Cells[2].Text = "JOB_ID";
+                //e.Row.Cells[3].Text = "INDEX";
+            }
+        }
+
+
+        
+        // SORT ANY GRIDVIEW COLUMN. 
+        protected void gridView_Sorting(object sender, GridViewSortEventArgs e)
+        {
+            //Retrieve the table from the session object.
+            DataTable dt = Session["TaskTable"] as DataTable;
+
+            if (dt != null)
+            {
+                //Sort the data.
+                dt.DefaultView.Sort = e.SortExpression + " " + GetSortDirection(e.SortExpression);
+                sortOrder.Text = "Sorted By : " + dt.DefaultView.Sort;
+                indexeStatusGridView.DataSource = Session["TaskTable"];
+                indexeStatusGridView.DataBind();
+            }
+        }
+
+
+        // GET SORTING ORDER
+        private string GetSortDirection(string column)
+        {
+            // By default, set the sort direction to ascending.
+            string sortDirection = "ASC";
+
+            // Retrieve the last column that was sorted.
+            string sortExpression = ViewState["SortExpression"] as string;
+
+            if (sortExpression != null)
+            {
+                // Check if the same column is being sorted.
+                // Otherwise, the default value can be returned.
+                if (sortExpression == column)
+                {
+                    string lastDirection = ViewState["SortDirection"] as string;
+                    if ((lastDirection != null) && (lastDirection == "ASC"))
+                    {
+                        sortDirection = "DESC";
+                    }
+                }
+            }
+
+            // Save new values in ViewState.
+            ViewState["SortDirection"] = sortDirection;
+            ViewState["SortExpression"] = column;
+
+            return sortDirection;
         }
 
     }

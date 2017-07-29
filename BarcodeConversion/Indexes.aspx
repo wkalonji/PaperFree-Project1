@@ -27,7 +27,6 @@
                     "Click OK If you did print and are satisfied with the Index Sheets.\n" +
                     "Click CANCEL if you did not print or are not satisfied with the Index Sheets.");
                 if (answer == true) {
-                   // alert("SECOND");
                     document.getElementById("pageToPrint").style.display = "none";
                     document.getElementById('<%=setAsPrinted.ClientID%>').click();                                    
                 } else {
@@ -48,64 +47,75 @@
             }
             window.onbeforeprint = beforePrint;
             window.onafterprint = afterPrint;
-        }());
+         }());
     </script>
 
 
     <asp:Panel ID="unprintedIndexesPanel" runat="server">
-        <h2 style="margin-top:30px;margin-bottom:20px">View And Print Index Sheets</h2>   
-
-        <div>           
-            <table class = table style="margin-top:25px">
-                <tr><td colspan="2" style="padding-bottom:40px;"><asp:Button ID="getUnprintedIndexes" Visible="true" runat="server" Text="Reset" onclick="getUnprintedIndexes_Click" /></td></tr>
+        <div style="margin-top:45px; margin-bottom:40px; height:50px; border-bottom:solid 1px green;width:899px;">
+            <h2 style="margin-top:35px;">View And Print Index Sheets</h2>   
+        </div>
+        <div style="display:inline-block;">           
+            <table style="margin-top:15px; width:100%;" runat="server">
+                <tr><td colspan="3" style="padding-bottom:40px;"><asp:Button ID="getUnprintedIndexes" Visible="true" runat="server" Text="Reset" onclick="getUnprintedIndexes_Click" /></td></tr>
                 <tr>
-                    <td>
-                        <h4 style="color:blue; display:inline"><asp:Label ID="description" Text="Your Unprinted Indexes" Visible="True" runat="server"></asp:Label></h4>
-                    </td>
-                    <td style="text-align:right; vertical-align:central; padding-bottom:5px;">
+                    <td><asp:Button ID="getBarcodeBtn" Visible="false" runat="server" Text="Show Barcodes" onclick="getBarcode_Click" /></td>
+                    <td style="text-align:right;padding-left:20px;">
                         <asp:Button ID="deleteBtn" Visible="false" runat="server" Text="Delete Indexes" 
                             OnClientClick="return confirm('Selected Indexes will be permanently deleted. Delete anyway?');" 
                             OnClick="deleteIndexes_Click" />
                     </td>
+                    <td style="text-align:right"><asp:Button ID="printBarcodeBtn" Visible="false" runat="server" Text="Print Barcodes" onclick="printBarcode_Click"/></td>
+                </tr>
+                <tr><td colspan="3" style="padding-top:30px;">
+                        <h4 style="color:blue; display:inline"><asp:Label ID="description" Text="Your Unprinted Indexes" Visible="True" runat="server"></asp:Label></h4>
+                    </td>
+                </tr>
+                <tr >
+                    <td colspan="2" style="padding-top:10px;">
+                        <asp:Label ID="sortOrder" Text="Sorted By : CREATION_TIME ASC (Default)" runat="server"></asp:Label>
+                    </td>
+                    <td style="text-align:right;">
+                        <asp:Label ID="recordsPerPageLabel" Text="Records per page" runat="server"></asp:Label>
+                        <asp:DropDownList ID="recordsPerPage" OnSelectedIndexChanged="onSelectedRecordsPerPage" runat="server" AutoPostBack="true">
+                            <asp:ListItem Value="5">5</asp:ListItem>
+                            <asp:ListItem Value="10" Selected="true">10</asp:ListItem>
+                            <asp:ListItem Value="15">15</asp:ListItem>
+                            <asp:ListItem Value="20">20</asp:ListItem>
+                            <asp:ListItem Value="30">30</asp:ListItem>
+                        </asp:DropDownList>
+                    </td>
                 </tr>                  
             </table>
-        
-            <asp:GridView ID="indexesGridView" runat="server" style="margin-top:15px" CssClass="mydatagrid" PagerStyle-CssClass="pager"
-                        PageSize="20" HeaderStyle-CssClass="header" RowStyle-CssClass="rows" AllowPaging="true" OnPageIndexChanging="pageChange_Click" OnRowDataBound="rowDataBound" > 
+            <asp:GridView ID="indexesGridView" runat="server" style="margin-top:5px" CssClass="mydatagrid" PagerStyle-CssClass="pager" 
+                          HeaderStyle-CssClass="header" RowStyle-CssClass="rows" AllowPaging="True" OnPageIndexChanging="pageChange_Click"
+                         OnRowDataBound="rowDataBound" OnSorting="gridView_Sorting" AllowSorting="True"> 
                 <columns>
-               
                     <asp:templatefield HeaderText="Select">
                         <HeaderTemplate>
-                            <asp:checkbox ID="selectAll" AutoPostBack="true" OnCheckedChanged="selectAll_changed" runat="server"></asp:checkbox>
+                            &nbsp;<asp:CheckBox ID="selectAll" runat="server" AutoPostBack="true" OnCheckedChanged="selectAll_changed" />
                         </HeaderTemplate>
                         <ItemTemplate>
-                            <asp:checkbox ID="cbSelect"  runat="server"></asp:checkbox>
+                            <asp:CheckBox ID="cbSelect" runat="server" />
                         </ItemTemplate>
                     </asp:templatefield>
-
-                    <asp:templatefield HeaderText ="N&#176;" ShowHeader="true">
-                        <ItemTemplate >
+                    <asp:templatefield HeaderText="N°" ShowHeader="true">
+                        <ItemTemplate>
                             <%# Container.DataItemIndex + 1 %>
                         </ItemTemplate>
                     </asp:templatefield>
-
                     <asp:TemplateField HeaderText="" ShowHeader="false">
                         <ItemTemplate>
-                            <asp:Image runat="server" ID="imgBarCode" />
+                            <asp:Image ID="imgBarCode" runat="server" />
                         </ItemTemplate>
                     </asp:TemplateField>
-                </columns>       
+                </columns>
+                <HeaderStyle CssClass="header" />
+                <PagerStyle CssClass="pager" />
+                <RowStyle CssClass="rows" />
             </asp:GridView>
-        
         </div>
-        <div >
-            <table class = table style="margin-top:25px">
-                <tr>
-                    <td><asp:Button ID="getBarcodeBtn" Visible="false" runat="server" Text="Show Barcodes" onclick="getBarcode_Click" /></td>
-                    <td style="text-align:right"><asp:Button ID="printBarcodeBtn" Visible="false" runat="server" Text="Print Barcodes" onclick="printBarcode_Click"/></td>
-                </tr>                  
-            </table>
-        </div>   
+         
     </asp:Panel>
     <div style="display:none; margin-top:15px;">
         <asp:Button ID="setAsPrinted" runat="server" Text="ShowPanel" onclick="setAsPrinted_Click"/>

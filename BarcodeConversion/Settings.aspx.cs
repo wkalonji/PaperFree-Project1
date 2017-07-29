@@ -1103,6 +1103,8 @@ namespace BarcodeConversion
             label1.Focus();
             regex1.Text = string.Empty;
             label2.Text = string.Empty;
+            regex2.Text = string.Empty;
+            label3.Text = string.Empty;
             regex3.Text = string.Empty;
             label4.Text = string.Empty;
             regex4.Text = string.Empty;

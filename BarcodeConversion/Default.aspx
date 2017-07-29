@@ -53,7 +53,9 @@
 
     <asp:Panel ID="formPanel" runat="server">
         <asp:Panel ID="formPanelJobSelection" runat="server">
-            <div><h2 style="margin-top:35px">Job Selection</h2></div>
+            <div style="margin-top:45px; margin-bottom:40px; height:50px; border-bottom:solid 1px green;width:899px;">
+                <h2 style="margin-top:45px">Job Selection</h2>
+            </div>
             <asp:Button ID="selectJobBtn" Visible="false" runat="server" Text="Generate Jobs" onclick="selectJob_Click" />
 
             <table class = table>
@@ -115,21 +117,21 @@
         </p>
            
      --%>   <asp:Panel ID="generateIndexSection" Visible="false" runat="server">
-                <table class = table >
+                <table class = table style="width:550px;" >
                     <tr>
-                        <td style="vertical-align:middle"><asp:Label ID="indexLabel" runat="server">Index generated:  </asp:Label></td>
-                        <td style="vertical-align:middle"><asp:TextBox ID="textToConvert" Readonly="true" Borderstyle="None" Font-Bold="true" Width=250 Font-size="20px" runat="server"></asp:TextBox></td>
+                        <td><asp:Label ID="indexLabel" runat="server">Index generated:  </asp:Label></td>
+                        <td style="text-align:left;"><asp:Label ID="textToConvert" Font-Bold="true" Width=300 Font-size="20px" runat="server"></asp:Label></td>
                     </tr>
                     <tr>
-                        <td style="vertical-align:top"><asp:Label ID="barcodeLabel" runat="server">Corresponding Barcode:</asp:Label></td>
-                        <td style="vertical-align:middle"><asp:Image ID="imgBarcode" runat="server"/></td>
+                        <td style="vertical-align:central; width:250px;"><asp:Label ID="barcodeLabel" runat="server">Corresponding Barcode:</asp:Label></td>
+                        <td style="vertical-align:middle;text-align:right"><asp:Image ID="imgBarcode" runat="server"/></td>
                     </tr>
                 </table>
 
-                <table class = tableFull style="margin-top:25px">
+                <table class = tableFull style="margin-top:25px; width:540px;">
                     <tr>
                         <td><asp:Button ID="saveIndex" runat="server" Text="Save Index" onclick="saveIndex_Click" /></td>
-                        <td style="text-align:left"><asp:Button ID="saveAndPrint" runat="server" Text="Save & Print Barcode" onclick="saveAndPrint_Click" /></td>
+                        <td style="text-align:right"><asp:Button ID="saveAndPrint" runat="server" Text="Save & Print Barcode" onclick="saveAndPrint_Click" /></td>
                     </tr>                  
                 </table>
             </asp:Panel>

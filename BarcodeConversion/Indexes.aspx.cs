@@ -21,7 +21,8 @@ namespace BarcodeConversion
                 getUnprintedIndexes_Click(new object(), new EventArgs());
             }
             Control c = Helper.GetPostBackControl(this.Page);
-            if (c != null && c.ID == "getUnprintedIndexes") indexesGridView.PageIndex = 0;
+            if (c != null && (c.ID == "getUnprintedIndexes" || c.ID == "recordsPerPage")) indexesGridView.PageIndex = 0;
+            //if (c != null && c.ID == "setAsPrinted") getUnprintedIndexes_Click(new object(), new EventArgs());
         }
 
         // 'RESET' CLICKED: GET UNPRINTED INDEXES. FUCNTION
@@ -45,13 +46,20 @@ namespace BarcodeConversion
                     ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
                     return;
                 }
-                cmd = new SqlCommand("SELECT BARCODE, JOB_ID, CREATION_TIME FROM INDEX_DATA WHERE OPERATOR_ID=@opId AND PRINTED=0", con);
+                cmd = new SqlCommand(   "SELECT BARCODE, ABBREVIATION, CREATION_TIME " +
+                                        "FROM INDEX_DATA " +
+                                        "INNER JOIN JOB ON INDEX_DATA.JOB_ID = JOB.ID " +
+                                        "WHERE OPERATOR_ID=@opId AND PRINTED=0", con);
                 cmd.Parameters.AddWithValue("@opId", opID);
                 da = new SqlDataAdapter(cmd);
                 ds = new DataSet();
                 da.Fill(ds);
                 if (ds.Tables.Count > 0)
                 {
+                    //Persist the table in the Session object.
+                    Session["Table"] = ds.Tables[0];
+                    sortOrder.Text = "Sorted By : CREATION_TIME ASC (Default)";
+
                     indexesGridView.DataSource = ds.Tables[0];
                     indexesGridView.DataBind();
                 }
@@ -64,14 +72,17 @@ namespace BarcodeConversion
                     getBarcodeBtn.Visible = false;
                     printBarcodeBtn.Visible = false;
                     deleteBtn.Visible = false;
-                    string noIndex = "There are no more records of unprinted inxdexes.";
-                    ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + noIndex + "');", true);
+                    recordsPerPage.Visible = false;
+                    recordsPerPageLabel.Visible = false;
+                    description.Text = "You have no more records of unprinted indexes";
                 }
                 else
                 {   
                     getBarcodeBtn.Visible = true;
                     printBarcodeBtn.Visible = true;
                     deleteBtn.Visible = true;
+                    recordsPerPage.Visible = true;
+                    recordsPerPageLabel.Visible = true;
                 }
 
             }
@@ -219,7 +230,7 @@ namespace BarcodeConversion
                 if (chxBox.Checked)
                 {
                     boxChecked = true;
-                    indexesGridView.HeaderRow.Cells[2].Text = "&nbsp;&nbsp;&nbsp;Barcode";
+                    indexesGridView.HeaderRow.Cells[2].Text = "&nbsp;&nbsp;&nbsp;BARCODE IMAGE";
 
                     if (row.RowType == DataControlRowType.DataRow)
                     {
@@ -258,7 +269,7 @@ namespace BarcodeConversion
             foreach (GridViewRow row in indexesGridView.Rows)
             {
                 var indexString = row.Cells[3].Text;
-                var imgBarCode = row.FindControl("imgBarCode") as System.Web.UI.WebControls.Image;
+                var imgBarCode = row.FindControl("imgBarCode") as Image;
                 CheckBox chxBox = row.FindControl("cbSelect") as CheckBox;
                 List<EntryContent> allEntriesList = new List<EntryContent>();
 
@@ -375,7 +386,7 @@ namespace BarcodeConversion
 
 
 
-        // SETTING INDEX AS PRINTED IN DB. FUNCTION
+        // SET INDEX AS PRINTED IN DB. FUNCTION
         protected void setIndexAsPrinted_Click(object sender, EventArgs e)
         {
             if (!Page.IsValid) return;
@@ -400,25 +411,36 @@ namespace BarcodeConversion
                         }
                         else
                         {
-                            string msg = "There was an unexpected error. Make sure there are no duplicate indexes on records. Please Try again. If issue persists, contact your tech support.";
+                            string msg = "Error: Couldn't update Index as PRINTED. Contact system admin.";
                             ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
                         }
                     }
                 }             
             }
+            con.Close();
+
             // Confirmation msg & back to unprinted indexes gridview
             string jobDone;
             if(counter == 1)
             {
-                jobDone = counter + " Index record was updated and set as PRINTED.";
+                jobDone = counter + " index record was updated and set as PRINTED.";
             }
             else
             {
-                jobDone = counter + " Indexes records were updated and set as PRINTED.";
+                jobDone = counter + " index records were updated and set as PRINTED.";
             }
-            
             ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + jobDone + "');", true);
             getUnprintedIndexes_Click(new object(), new EventArgs());
+
+        }
+
+
+        // RECORDS PER PAGE
+        protected void onSelectedRecordsPerPage(object sender, EventArgs e)
+        {
+            indexesGridView.PageSize = Int32.Parse(recordsPerPage.SelectedValue);
+            getUnprintedIndexes_Click(new object(), new EventArgs());
+            sortOrder.Text = "Sorted By : CREATION_TIME ASC (Default)";
         }
 
 
@@ -453,6 +475,62 @@ namespace BarcodeConversion
             {
                 e.Row.Cells[i].Attributes.Add("style", "white-space: nowrap;");
             }
+
+            // GIVE CUSTOM COLUMN NAMES
+            if (e.Row.RowType == DataControlRowType.Header)
+            {
+                //e.Row.Cells[3].Text = "INDEX";
+                //e.Row.Cells[4].Text = "JOB";
+            }
+        }
+
+
+
+        // SORT ANY GRIDVIEW COLUMN. 
+        protected void gridView_Sorting(object sender, GridViewSortEventArgs e)
+        {
+            //Retrieve the table from the session object.
+            DataTable dt = Session["Table"] as DataTable;
+
+            if (dt != null)
+            {
+                //Sort the data.
+                dt.DefaultView.Sort = e.SortExpression + " " + GetSortDirection(e.SortExpression);
+                sortOrder.Text = "Sorted By : " + dt.DefaultView.Sort;
+                indexesGridView.DataSource = Session["Table"];
+                indexesGridView.DataBind();
+            }
+        }
+
+
+        // GET SORTING ORDER
+        private string GetSortDirection(string column)
+        {
+            // By default, set the sort direction to ascending.
+            string sortDirection = "ASC";
+
+            // Retrieve the last column that was sorted.
+            string sortExpression = ViewState["SortExpres"] as string;
+
+            if (sortExpression != null)
+            {
+                // Check if the same column is being sorted.
+                // Otherwise, the default value can be returned.
+                if (sortExpression == column)
+                {
+                    string lastDirection = ViewState["SortDirect"] as string;
+                    if ((lastDirection != null) && (lastDirection == "ASC"))
+                    {
+                        sortDirection = "DESC";
+                    }
+                }
+            }
+
+            // Save new values in ViewState.
+            ViewState["SortDirec"] = sortDirection;
+            ViewState["SortExpres"] = column;
+
+            return sortDirection;
         }
     }
 }

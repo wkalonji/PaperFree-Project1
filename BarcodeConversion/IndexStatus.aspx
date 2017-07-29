@@ -33,8 +33,9 @@
 
 
      <asp:Panel ID="indexStatusPanel" runat="server">
-        <h2 style="margin-top:30px;margin-bottom:20px">View Index Status</h2>   
-
+        <div style="margin-top:45px; margin-bottom:40px; height:50px; border-bottom:solid 1px green;width:899px;">
+            <h2 style="margin-top:35px;">View Index Status</h2>
+        </div>   
         <div>           
             <table class = "table">
                 <tr> 
@@ -80,23 +81,36 @@
                     </tr>
                 </table>
             </asp:Panel>
-            <h4 style="margin-top:35px; color:blue"><asp:Label ID="description" Text="" Visible="false" runat="server"></asp:Label></h4>
-            <asp:GridView ID="indexeStatusGridView" runat="server" style="margin-top:15px" CssClass="mydatagrid" PagerStyle-CssClass="pager"
-                        PageSize="20" HeaderStyle-CssClass="header" RowStyle-CssClass="rows" AllowPaging="true" OnPageIndexChanging="pageChange_Click" OnRowDataBound="rowDataBound" > 
-                <columns>
-                    <asp:templatefield HeaderText ="N&#176;" ShowHeader="true">
-                        <ItemTemplate >
-                            <%# Container.DataItemIndex + 1 %>
-                        </ItemTemplate>
-                    </asp:templatefield>
-
-                    <asp:TemplateField HeaderText="" ShowHeader="false">
-                        <ItemTemplate>
-                            <asp:Image runat="server" ID="imgBarCode" />
-                        </ItemTemplate>
-                    </asp:TemplateField>
-                </columns>       
-            </asp:GridView>
+            <div style="display:inline-block;">
+                <table id="gridHeader" style="width:100%;margin-top:25px;margin-bottom:-10px;" runat="server">
+                    <tr><td colspan="2"><h4 style="color:blue"><asp:Label ID="description" Text="" runat="server"></asp:Label></h4> </td></tr>
+                    <tr>
+                        <td><asp:Label ID="sortOrder" Text="Sorted By : CREATION_TIME ASC (Default)" runat="server"></asp:Label></td>
+                        <td style="text-align:right;">
+                            <asp:Label ID="recordsPerPageLabel" Text="Records per page" runat="server"></asp:Label>
+                            <asp:DropDownList ID="recordsPerPage" OnSelectedIndexChanged="onSelectedRecordsPerPage" runat="server" AutoPostBack="true">
+                                <asp:ListItem Value="5">5</asp:ListItem>
+                                <asp:ListItem Value="10" Selected="true">10</asp:ListItem>
+                                <asp:ListItem Value="15">15</asp:ListItem>
+                                <asp:ListItem Value="20">20</asp:ListItem>
+                                <asp:ListItem Value="30">30</asp:ListItem>
+                            </asp:DropDownList>
+                        </td>
+                    </tr>
+                </table>
+            
+                <asp:GridView ID="indexeStatusGridView" runat="server" style="margin-top:15px" CssClass="mydatagrid" PagerStyle-CssClass="pager"
+                            PageSize="10" HeaderStyle-CssClass="header" RowStyle-CssClass="rows" AllowPaging="true" OnPageIndexChanging="pageChange_Click"
+                            OnRowDataBound="rowDataBound" OnSorting="gridView_Sorting" AllowSorting="True"> 
+                    <columns>
+                        <asp:templatefield HeaderText ="N&#176;" ShowHeader="true">
+                            <ItemTemplate >
+                                <%# Container.DataItemIndex + 1 %>
+                            </ItemTemplate>
+                        </asp:templatefield>
+                    </columns>       
+                </asp:GridView>
+            </div>
         
         </div>   
     </asp:Panel>
