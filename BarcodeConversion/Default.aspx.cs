@@ -83,7 +83,7 @@ namespace BarcodeConversion
                         if (text1 != string.Empty)
                         {
                             text1 = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(text1.ToLower());
-                            LABEL1.Text = text1 + ":";
+                            LABEL1.Text = text1 + " :";
                             LABEL1.Visible = true;
                             label1Box.Visible = true;
                             label1Box.Focus();
@@ -92,7 +92,7 @@ namespace BarcodeConversion
                         {
                             string text2 = (string)reader2.GetValue(3);
                             text2 = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(text2.ToLower());
-                            LABEL2.Text = text2;
+                            LABEL2.Text = text2 + " :";
                             LABEL2.Visible = true;
                             label2Box.Visible = true;
                         }
@@ -100,7 +100,7 @@ namespace BarcodeConversion
                         {
                             string text3 = (string)reader2.GetValue(5);
                             text3 = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(text3.ToLower());
-                            LABEL3.Text = text3;
+                            LABEL3.Text = text3 + " :";
                             LABEL3.Visible = true;
                             label3Box.Visible = true;
                         }
@@ -108,7 +108,7 @@ namespace BarcodeConversion
                         {
                             string text4 = (string)reader2.GetValue(7);
                             text4 = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(text4.ToLower());
-                            LABEL4.Text = text4;
+                            LABEL4.Text = text4 + " :";
                             LABEL4.Visible = true;
                             label4Box.Visible = true;
                         }
@@ -116,24 +116,25 @@ namespace BarcodeConversion
                         {
                             string text5 = (string)reader2.GetValue(9);
                             text5 = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(text5.ToLower());
-                            LABEL5.Text = text5;
+                            LABEL5.Text = text5 + " :";
                             LABEL5.Visible = true;
                             label5Box.Visible = true;
                         }
                     }
                     reader2.Close();
+                    con.Close();
                 }
                 else
                 {   
-                    string msg = "The "+ this.selectJob.SelectedValue + " Job that you selected has not yet been configured. Please contact your system admin.";
+                    string msg = "The "+ selectJob.SelectedValue + " Job that you selected has not yet been configured. Please contact your system admin.";
                     ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
                     selectJob.SelectedValue = "Select";
                     con.Close();
                     return;
                 }
-            }         
+            }
+            con.Close();
         }
-
 
 
         // 'GENERATE INDEX' CLICKED: GENERATE INDEX AND BARCODE FROM FORM DATA. FUNCTION
@@ -296,7 +297,7 @@ namespace BarcodeConversion
             {
                 Response.Write(
                     "<tr>" +
-                        "<td style='font-size:25px; font-weight:500;'>" + entry.labelText + ": </h2></td>" +
+                        "<td style='font-size:25px; font-weight:500;'>" + entry.labelText + ":" + "</td>" +
                         "<td style='font-size:25px; font-weight:500; padding-left:15px;'>" + entry.text.ToUpper() + "</td>" +
                     "</tr>" 
                 );
@@ -384,8 +385,7 @@ namespace BarcodeConversion
             int opID = Helper.getUserId(user, con);
             if (opID == 0)
             {
-                string msg = "Your name could not be found, thus not allowed to use this product. Contact Tech Support";
-                ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                noJobsFound.Visible = true;
                 con.Close();
                 return;
             }
@@ -405,7 +405,8 @@ namespace BarcodeConversion
             }
             else
             {
-                noJobsFound.Visible = true; 
+                noJobsFound.Visible = true;
+                con.Close();
                 return;
             }
 
@@ -432,6 +433,7 @@ namespace BarcodeConversion
                     {
                         string msg = "Some went wront while getting job abbreviations from job IDs.";
                         ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                        con.Close();
                         return;
                     }
                 }
@@ -440,6 +442,7 @@ namespace BarcodeConversion
             {
                 string msg = "For some reason, jobIdList did not populate";
                 ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                con.Close();
                 return;
             }
             con.Close();
@@ -470,13 +473,7 @@ namespace BarcodeConversion
                 reader4.Close();
                 con.Close();
             }
-            else
-            {
-                string msg = "Couldn't set background color for your configured jobs";
-                ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
-                con.Close();
-                return;
-            }
+            con.Close();
         }
 
 

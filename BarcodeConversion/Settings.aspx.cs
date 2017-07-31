@@ -19,10 +19,58 @@ namespace BarcodeConversion
         {
             if (!Page.IsPostBack) jobAbb.Focus();
             setDropdownColor(con);
+            success.Visible = false;
         }
 
-  
-        // CREATE NEW JOB. FUNCTION
+
+
+
+        // 'CHOOSE YOUR ACTION' SELECTED
+        protected void actionChange(object sender, EventArgs e)
+        {
+
+            if (selectAction.SelectedValue == "edit")
+            {
+                // Fill dropdown list with jobs.
+                selectJobList.Items.Clear();
+                selectJobList.Items.Add("Select");
+                getDropdownJobItems();
+                jobAbb.Visible = false;
+                createJobBtn.Visible = false;
+                deleteJobBtn.Visible = false;
+                selectJobList.Visible = true;
+                editJobBtn.Visible = true;
+                jobNameLabel.Visible = true;
+                jobName.Visible = true;
+                jobName.Attributes["placeholder"] = " Optional";
+                jobActiveLabel.Visible = true;
+                jobActiveBtn.Visible = true;
+            }
+            else if (selectAction.SelectedValue == "create")
+            {
+                jobSectionDefault();
+            }
+            else
+            {
+                editJobBtn.Visible = false;
+                jobAbb.Visible = false;
+                createJobBtn.Visible = false;
+                jobNameLabel.Visible = false;
+                jobName.Visible = false;
+                jobActiveLabel.Visible = false;
+                jobActiveBtn.Visible = false;
+                jobAssignedToLabel.Visible = false;
+                jobAssignedTo.Visible = false;
+                selectJobList.Visible = true;
+                deleteJobBtn.Visible = true;
+                getDropdownJobItems();
+            }
+        }
+
+
+
+
+        // 'CREATE' CLICKED: CREATE NEW JOB. FUNCTION
         protected void createJob_Click(object sender, EventArgs e)
         {
             if (!Page.IsValid) return;
@@ -48,42 +96,46 @@ namespace BarcodeConversion
             }
             else
             {
-                // Save created job
-                SqlCommand cmd = new SqlCommand("INSERT INTO JOB (ABBREVIATION, NAME, ACTIVE) VALUES(@abbr, @name, @active)", con);
-                cmd.Parameters.AddWithValue("@abbr", this.jobAbb.Text);
-                cmd.Parameters.AddWithValue("@name", this.jobName.Text);
-                cmd.Parameters.AddWithValue("@active", this.jobActiveBtn.SelectedValue);
-                if (cmd.ExecuteNonQuery() == 1)
+                try
                 {
-                    // Assign job to assignee
-                    if (jobAssignedTo.Text != string.Empty)
+                    // Save created job
+                    SqlCommand cmd = new SqlCommand("INSERT INTO JOB (ABBREVIATION, NAME, ACTIVE) VALUES(@abbr, @name, @active)", con);
+                    cmd.Parameters.AddWithValue("@abbr", this.jobAbb.Text);
+                    cmd.Parameters.AddWithValue("@name", this.jobName.Text);
+                    cmd.Parameters.AddWithValue("@active", this.jobActiveBtn.SelectedValue);
+                    if (cmd.ExecuteNonQuery() == 1)
                     {
-                        string assignee = jobAssignedTo.Text;
-                        string abbr = jobAbb.Text;
-                        bool answer = AssignJob(assignee, abbr, con); // calling assignJob function
-                        if (answer == true)
+                        // Assign job to assignee
+                        if (jobAssignedTo.Text != string.Empty)
                         {
-                            string msg = "New job successfully saved & assigned!";
-                            ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
-                            jobFormClear();
+                            string assignee = jobAssignedTo.Text;
+                            string abbr = jobAbb.Text;
+                            bool answer = AssignJob(assignee, abbr, con); // calling assignJob function
+                            if (answer == true)
+                            {
+                                string msg = "New job successfully saved & assigned!";
+                                ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                                jobFormClear();
+                            }
+                            else
+                            {
+                                string msg = "New job successfully saved, but not assigned! Contact tech support.";
+                                ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                                jobFormClear();
+                            }
                         }
                         else
                         {
-                            string msg = "New job successfully saved, but not assigned! Contact tech support.";
-                            ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                            success.Text = "New Job Created!";
+                            success.Visible = true;
+                            ClientScript.RegisterStartupScript(this.GetType(), "fadeoutOp", "FadeOut3();", true);
                             jobFormClear();
                         }
                     }
-                    else
-                    {
-                        string msg = "New job Saved!";
-                        ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
-                        jobFormClear();
-                    }                
                 }
-                else
+                catch (Exception ex)
                 {
-                    string msg = "New Job NOT saved. Try again or contact Tech support.";
+                    string msg = "This Job may already exists. Duplicates are not allowed.";
                     ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
                     con.Close();
                     jobFormClear();
@@ -95,17 +147,101 @@ namespace BarcodeConversion
 
 
 
+        // 'EDIT' CLICKED: EDIT JOB NAME OR ACTIVE STATUS. FUNCTION
+        protected void editJob_Click(object sender, EventArgs e)
+        {
+            if (!Page.IsValid) return;
+            con.Open();
+            
+            // Edit job
+            SqlCommand cmd = new SqlCommand();
+            if(this.selectJobList.SelectedValue == "Select")
+            {
+                string msg = "Please select a Job.";
+                Page.ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                jobFormClear();
+                return;
+            }
+            if (this.jobName.Text == string.Empty)
+            {
+                cmd = new SqlCommand("UPDATE JOB SET ACTIVE = @active WHERE ABBREVIATION = @abbr", con);
+                cmd.Parameters.AddWithValue("@active", this.jobActiveBtn.SelectedValue);
+                cmd.Parameters.AddWithValue("@abbr", this.selectJobList.SelectedValue);
+            }
+            else
+            {
+                cmd = new SqlCommand("UPDATE JOB SET NAME = @job, ACTIVE = @active WHERE ABBREVIATION = @abbr", con);
+                cmd.Parameters.AddWithValue("@job", this.jobName.Text);
+                cmd.Parameters.AddWithValue("@active", this.jobActiveBtn.SelectedValue);
+                cmd.Parameters.AddWithValue("@abbr", this.selectJobList.SelectedValue);
+            }
+            try
+            {
+                if (cmd.ExecuteNonQuery() == 1)
+                {
+                    // Assign job to assignee
+                    if (jobAssignedTo.Visible = true && jobAssignedTo.Text != string.Empty)
+                    {
+                        string assignee = jobAssignedTo.Text;
+                        string abbr = jobAbb.Text;
+                        bool answer = AssignJob(assignee, abbr, con); // calling assignJob function
+                        if (answer == true)
+                        {
+                            success.Text = "Job successfully updated & assigned!";
+                            success.Visible = true;
+                            ClientScript.RegisterStartupScript(this.GetType(), "fadeoutOp", "FadeOut3();", true);
+                            jobFormClear();
+                        }
+                        else
+                        {
+                            string msg = "Job updated successfully, but not assigned! Contact System Admin.";
+                            ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                            jobFormClear();
+                        }
+                    }
+                    else
+                    {
+                        success.Text = "Job updated successfully!";
+                        success.Visible = true;
+                        ClientScript.RegisterStartupScript(this.GetType(), "fadeoutOp", "FadeOut3();", true);
+                        jobFormClear();
+                    }
+                    con.Close();
+                    getDropdownJobItems();
+                    getActiveJobs();
+                    getUnassignedJobs();
+                }
+                else
+                {
+                    string msg = "Job not updated. Try again or contact System Admin.";
+                    ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                    con.Close();
+                    jobFormClear();
+                    return;
+                }
+                con.Close();
+            }
+            catch(Exception ex)
+            {
+                string msg = "Error.";
+                ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+            }
+            
+        }
+
+
+
         // 'DELETE' CLICKED: DELETE JOB. FUNCTION
         protected void deleteJob_Click(object sender, EventArgs e)
         {
             int jobID = 0;
             
             con.Open();
-            if (jobAbb.Text != string.Empty)
+            if (selectJobList.SelectedValue != "Select")
             {
                 // First, get ID of specified job.
                 SqlCommand cmd = new SqlCommand("SELECT ID FROM JOB WHERE ABBREVIATION = @abb", con);               
-                cmd.Parameters.AddWithValue("@abb", this.jobAbb.Text);
+                cmd.Parameters.AddWithValue("@abb", this.selectJobList.SelectedValue);
                 SqlDataReader reader = cmd.ExecuteReader();
                 if (reader.HasRows)
                 {
@@ -120,25 +256,31 @@ namespace BarcodeConversion
                     string msg = "Specified job does not exist, thus can't be deleted!";
                     ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
                     jobFormClear();
+                    jobAssignedToLabel.Visible = false;
+                    jobAssignedTo.Visible = false;
                     con.Close();
                     return;
                 }
 
                 if(jobID > 0)
                 {
+                    // TBD: Got to delete the config 1st
                     // Then, delete job record in OPERATOR_ACCESS
                     SqlCommand cmd2 = new SqlCommand("DELETE FROM OPERATOR_ACCESS WHERE JOB_ID = @jobID", con);
                     cmd2.Parameters.AddWithValue("@jobID", jobID);
                     if (cmd2.ExecuteNonQuery() == 1)
                     {
-                        // Finally, delete job record in JOB
+                        // Finally, delete job record in JOB table
                         SqlCommand cmd3 = new SqlCommand("DELETE FROM JOB WHERE ABBREVIATION = @abb", con);
-                        cmd3.Parameters.AddWithValue("@abb", this.jobAbb.Text);
+                        cmd3.Parameters.AddWithValue("@abb", this.selectJobList.SelectedValue);
                         if (cmd3.ExecuteNonQuery() == 1)
-                        {
-                            string msg = "Job successfully deleted!";
-                            ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                        { 
+                            success.Text = "Job successfully deleted!";
+                            success.Visible = true;
+                            ClientScript.RegisterStartupScript(this.GetType(), "fadeoutOp", "FadeOut3();", true);
                             jobFormClear();
+                            jobAssignedToLabel.Visible = false;
+                            jobAssignedTo.Visible = false;
                             con.Close();
                             return;
                         }
@@ -147,42 +289,45 @@ namespace BarcodeConversion
                             string msg = "Error: There was an error in deleting this job in JOB.";
                             ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
                             jobFormClear();
-                            con.Close();
-                            return;
-                        }
-                    }
-                    else if(cmd2.ExecuteNonQuery() == 0){
-                        // If no record in OPERATOR_ACCESS, just delete it in JOB
-                        SqlCommand cmd3 = new SqlCommand("DELETE FROM JOB WHERE ABBREVIATION = @abb", con);
-                        cmd3.Parameters.AddWithValue("@abb", this.jobAbb.Text);
-                        if (cmd3.ExecuteNonQuery() == 1)
-                        {
-                            string msg = "Job successfully deleted!";
-                            ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
-                            jobFormClear();
-                            con.Close();
-                            return;
-                        }
-                        else
-                        {
-                            string msg = "Error: There was an error in deleting this job in JOB.";
-                            ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
-                            jobFormClear();
+                            jobAssignedToLabel.Visible = false;
+                            jobAssignedTo.Visible = false;
                             con.Close();
                             return;
                         }
                     }
                     else
                     {
-                        string msg = "Error: There was an error in deleting this job in OPERATOR_ACCESS.";
-                        ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
-                        jobFormClear();
-                        con.Close();
-                        return;
+                        // If no record in OPERATOR_ACCESS, just delete it in JOB
+                        SqlCommand cmd3 = new SqlCommand("DELETE FROM JOB WHERE ABBREVIATION = @abb", con);
+                        cmd3.Parameters.AddWithValue("@abb", this.selectJobList.SelectedValue);
+                        if (cmd3.ExecuteNonQuery() == 1)
+                        {
+                            success.Text = "Job successfully deleted!";
+                            success.Visible = true;
+                            ClientScript.RegisterStartupScript(this.GetType(), "fadeoutOp", "FadeOut3();", true);
+                            jobFormClear();
+                            jobAssignedToLabel.Visible = false;
+                            jobAssignedTo.Visible = false;
+                            con.Close();
+                            return;
+                        }
+                        else
+                        {
+                            string msg = "Error: There was an error in deleting this job in JOB.";
+                            ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                            jobFormClear();
+                            jobAssignedToLabel.Visible = false;
+                            jobAssignedTo.Visible = false;
+                            con.Close();
+                            return;
+                        }
                     }
                 }
             }
             con.Close();
+            getDropdownJobItems();
+            jobAssignedToLabel.Visible = false;
+            jobAssignedTo.Visible = false;
         }
 
     
@@ -274,9 +419,12 @@ namespace BarcodeConversion
         private void jobFormClear()
         {
             jobAbb.Text = string.Empty;
+            selectJobList.SelectedValue = "Select";
             jobName.Text = string.Empty;
-            jobActiveBtn.SelectedValue = "True";
+            jobActiveBtn.SelectedValue = "1";
             jobAssignedTo.Text = string.Empty;
+            jobAssignedToLabel.Visible = true;
+            jobAssignedTo.Visible = true;
             jobAbb.Focus();
         }
 
@@ -299,6 +447,7 @@ namespace BarcodeConversion
             {
                 jobSection.Visible = true;
                 line.Visible = true;
+                jobSectionDefault();
             }
             else
             {
@@ -388,7 +537,7 @@ namespace BarcodeConversion
                         cmd2 = new SqlCommand("SELECT ABBREVIATION " +
                                              "FROM JOB " +
                                              "INNER JOIN OPERATOR_ACCESS ON JOB.ID = OPERATOR_ACCESS.JOB_ID " +
-                                             "WHERE OPERATOR_ACCESS.OPERATOR_ID = @ID", con);
+                                             "WHERE ACTIVE = 1 AND OPERATOR_ACCESS.OPERATOR_ID = @ID", con);
                         cmd2.Parameters.AddWithValue("@ID", opID);
                         da = new SqlDataAdapter(cmd2);
                         ds = new DataSet();
@@ -649,7 +798,7 @@ namespace BarcodeConversion
             if (jobIndexEditingPanel.Visible == false)
             {
                 jobIndexEditingPanel.Visible = true;
-                getDropdownJobItems();
+                getActiveJobs();
             }
             else
             {
@@ -666,7 +815,28 @@ namespace BarcodeConversion
             setDropdownColor(con);
         }
 
+        // 'JOB ABBR' SELECT: SET COLOR FOR DROPDOWN ACTIVE JOB ITEMS. FUNCTION
+        protected void onJobAbbSelect(object sender, EventArgs e)
+        {
+            //getDropdownJobItems();
+        }
 
+
+        // 'ACTIVE' SELECTED: SET 'ASSIGN TO' VISIBLE OR NOT
+        protected void onActiveSelect(object sender, EventArgs e)
+        {
+            if(jobActiveBtn.Visible && jobActiveBtn.SelectedValue == "True")
+            {
+                jobAssignedToLabel.Visible = true;
+                jobAssignedTo.Visible = true;
+            }
+            else
+            {
+                jobAssignedToLabel.Visible = false;
+                jobAssignedTo.Visible = false;
+            }
+
+        }
 
 
         // 'SET' CLICKED: SET INDEX FORM RULES. FUNCTION
@@ -744,7 +914,7 @@ namespace BarcodeConversion
 
                     if (cmd2.ExecuteNonQuery() == 1)
                     {
-                        string msg = selectJob.SelectedValue + " Job rules successfully set.";
+                        string msg = selectJob.SelectedValue + " Job config successfully set.";
                         ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
                         con.Close();
                         setDropdownColor(con);
@@ -753,7 +923,7 @@ namespace BarcodeConversion
                     }
                     else
                     {
-                        string msg = "Rules couln't be set. Please contact Tech support.";
+                        string msg = "Config couln't be set. Please contact Tech support.";
                         ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
                         clearRules();
                         con.Close();
@@ -817,7 +987,7 @@ namespace BarcodeConversion
 
                     if (cmd2.ExecuteNonQuery() == 1)
                     {
-                        string msg = selectJob.SelectedValue + " Job rules successfully unset.";
+                        string msg = selectJob.SelectedValue + " Job config successfully unset.";
                         ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
                         con.Close();
                         setDropdownColor(con);
@@ -826,7 +996,7 @@ namespace BarcodeConversion
                     }
                     else
                     {
-                        string msg = "Rules couln't be unset. Please contact system admin.";
+                        string msg = "Config couln't be unset. Please contact system admin.";
                         ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
                         clearRules();
                         con.Close();
@@ -847,28 +1017,30 @@ namespace BarcodeConversion
 
             // COLLAPSE ALL SECTIONS. HELPER FUNCTION 
             protected void collapseAll_Click(object sender, EventArgs e)
-        {
-            if (collapseAll.Text == "Collapse All")
             {
-                collapseAll.Text = "Hide All";
-                jobSection.Visible = true;
-                newUserSection.Visible = true;
-                getUnassignedJobs();
-                assignPanel.Visible = true;
-                jobIndexEditingPanel.Visible = true;
-                getDropdownJobItems();
-                line.Visible = true;
+                if (collapseAll.Text == "Collapse All")
+                {
+                    collapseAll.Text = "Hide All";
+                    jobSection.Visible = true;
+                    newUserSection.Visible = true;
+                    getUnassignedJobs();
+                    assignPanel.Visible = true;
+                    jobIndexEditingPanel.Visible = true;
+                    getDropdownJobItems();
+                    getActiveJobs();
+                    jobSectionDefault();
+                    line.Visible = true;
+                }
+                else
+                {
+                    collapseAll.Text = "Collapse All";
+                    jobSection.Visible = false;
+                    newUserSection.Visible = false;
+                    assignPanel.Visible = false;
+                    jobIndexEditingPanel.Visible = false;
+                    line.Visible = false;
+                }
             }
-            else
-            {
-                collapseAll.Text = "Collapse All";
-                jobSection.Visible = false;
-                newUserSection.Visible = false;
-                assignPanel.Visible = false;
-                jobIndexEditingPanel.Visible = false;
-                line.Visible = false;
-            }
-        }
 
 
 
@@ -886,7 +1058,7 @@ namespace BarcodeConversion
                 cmd = new SqlCommand("SELECT ABBREVIATION " +
                                      "FROM JOB " +
                                      "LEFT JOIN OPERATOR_ACCESS ON JOB.ID = OPERATOR_ACCESS.JOB_ID " +
-                                     "WHERE OPERATOR_ACCESS.JOB_ID IS NULL", con);
+                                     "WHERE JOB.ACTIVE = 1 AND OPERATOR_ACCESS.JOB_ID IS NULL", con);
                 con.Open();
                 da = new SqlDataAdapter(cmd);
                 ds = new DataSet();
@@ -905,12 +1077,15 @@ namespace BarcodeConversion
                 {
                     jobAccessGridView.Visible = false;
                     jobAccessBtn.Visible = false;
-                    string noJobs = "There are no more unassinged job records.";
-                    ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + noJobs + "');", true);
+
+                    jobsLabel.Text = "No Unassigned Jobs to display.";
+                    deleteAssignedBtn.Visible = false;
                 }
                 else
                 {
                     jobAccessBtn.Visible = true;
+                    jobsLabel.Text = "Currently Unassingned Jobs.";
+                    deleteAssignedBtn.Visible = true;
                 }
             }
             catch (SqlException ex)
@@ -943,18 +1118,31 @@ namespace BarcodeConversion
         // Get dropdown list job items
         private void getDropdownJobItems()
         {
-            selectJob.Items.Clear();
-            selectJob.Items.Add("Select");
+            selectJobList.Items.Clear();
+            selectJobList.Items.Add("Select");
+            SqlCommand cmd = new SqlCommand("SELECT ABBREVIATION, ACTIVE FROM JOB", con);
             con.Open();
-            SqlCommand cmd = new SqlCommand("SELECT ABBREVIATION FROM JOB", con);
+
             SqlDataReader reader = cmd.ExecuteReader();
             if (reader.HasRows)
             {
                 while (reader.Read())
                 {
                     string jobAbb = (string)reader.GetValue(0);
-                    selectJob.Items.Add(jobAbb);
-                    selectJob.AutoPostBack = true;
+                    bool active = (bool)reader.GetValue(1);
+                    selectJobList.Items.Add(jobAbb);
+                    if(active)
+                    {
+                        // Red config job items from 'JOB' section
+                        foreach (ListItem item in selectJobList.Items)
+                        {
+                            if (item.Value == jobAbb)
+                            {
+                                item.Attributes.Add("style", "color:Red;");
+                            }
+                        }
+                    }
+                    selectJobList.AutoPostBack = true;
                 }
                 reader.Close();
             }
@@ -968,9 +1156,42 @@ namespace BarcodeConversion
 
             // Get configured jobs, then Set color in dropdown list.
             con.Close();
-            setDropdownColor(con);
         }
 
+
+
+
+        // Get dropdown list ACTIVE job items
+        private void getActiveJobs()
+        {
+            selectJob.Items.Clear();
+            selectJob.Items.Add("Select");
+            SqlCommand cmd = new SqlCommand("SELECT ABBREVIATION FROM JOB WHERE ACTIVE = 1", con);
+            con.Open();
+            
+            SqlDataReader reader = cmd.ExecuteReader();
+            if (reader.HasRows)
+            {
+                while (reader.Read())
+                {
+                    string jobAbb = (string)reader.GetValue(0);
+                    selectJob.Items.Add(jobAbb);
+                    selectJob.AutoPostBack = true;
+                }
+                reader.Close();
+            }
+            else
+            {
+                string msg = "Some went wront while getting active job abbreviations from JOB";
+                ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                con.Close();
+                return;
+            }
+
+            // Get configured jobs, then Set color in dropdown list.
+            con.Close();
+            setDropdownColor(con);
+        }
 
 
         // ASSIGN JOB TO OPERATOR. HELPER FUNCTION
@@ -1050,12 +1271,14 @@ namespace BarcodeConversion
             con.Open();
             SqlCommand cmd4 = new SqlCommand("SELECT ABBREVIATION " +
                                              "FROM JOB " +
-                                             "INNER JOIN JOB_CONFIG_INDEX ON JOB.ID = JOB_CONFIG_INDEX.JOB_ID", con);
+                                             "INNER JOIN JOB_CONFIG_INDEX ON JOB.ID = JOB_CONFIG_INDEX.JOB_ID " +
+                                             "WHERE JOB.ACTIVE = 1", con);
             SqlDataReader reader4 = cmd4.ExecuteReader();
             if (reader4.HasRows)
             {
                 while (reader4.Read())
                 {
+                    // Red config job items from 'JOB INDEX CONFIG' section
                     foreach (ListItem item in selectJob.Items)
                     {
                         if (item.Value == (string)reader4.GetValue(0))
@@ -1067,13 +1290,7 @@ namespace BarcodeConversion
                 reader4.Close();
                 con.Close();
             }
-            else
-            {
-                string msg = "Couldn't set background color for your configured jobs";
-                ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
-                con.Close();
-                return;
-            }
+            con.Close();
         }
 
 
@@ -1110,6 +1327,27 @@ namespace BarcodeConversion
             regex4.Text = string.Empty;
             label5.Text = string.Empty;
             regex5.Text = string.Empty;
+        }
+
+
+        // JOB SECTION DEFAULTS. HELPER FUNCTION
+        private void jobSectionDefault()
+        {
+            selectAction.SelectedValue = "create";
+            selectJobList.Visible = false;
+            deleteJobBtn.Visible = false;
+            editJobBtn.Visible = false;
+
+            jobAbb.Visible = true;
+            createJobBtn.Visible = true;
+            jobNameLabel.Visible = true;
+            jobName.Visible = true;
+            jobName.Attributes["placeholder"] = " Required";
+            jobActiveLabel.Visible = true;
+            jobActiveBtn.Visible = true;
+            jobActiveBtn.SelectedValue = "1";
+            jobAssignedToLabel.Visible = true;
+            jobAssignedTo.Visible = true;
         }
 
     }

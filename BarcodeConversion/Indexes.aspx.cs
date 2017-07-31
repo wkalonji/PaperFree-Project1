@@ -74,7 +74,8 @@ namespace BarcodeConversion
                     deleteBtn.Visible = false;
                     recordsPerPage.Visible = false;
                     recordsPerPageLabel.Visible = false;
-                    description.Text = "You have no more records of unprinted indexes";
+                    sortOrder.Visible = false;
+                    description.Text = "You have no records of unprinted indexes";
                 }
                 else
                 {   
@@ -83,6 +84,7 @@ namespace BarcodeConversion
                     deleteBtn.Visible = true;
                     recordsPerPage.Visible = true;
                     recordsPerPageLabel.Visible = true;
+                    sortOrder.Visible = true;
                 }
 
             }
@@ -337,7 +339,7 @@ namespace BarcodeConversion
                             string label = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(entry.labelText.ToLower());
                             Response.Write(
                                 "<tr>" +
-                                    "<td style='font-size:25px; font-weight:500;'>" + label + ": </h2></td>" +
+                                    "<td style='font-size:25px; font-weight:500;'>" + label + ":" + "</td>" +
                                     "<td style='font-size:25px; font-weight:500; padding-left:15px;'>" + entry.text.ToUpper() + "</td>" +
                                 "</tr>"
                             );

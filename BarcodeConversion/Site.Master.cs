@@ -30,25 +30,22 @@ namespace BarcodeConversion
                             isAdmin = (bool)reader.GetValue(0);
                         }
                         reader.Close();
+                        con.Close();
                     }
                     else
-                    {    
+                    {
+                        reader.Close();
+
                         // If user doesn't exist, register user and set Admin status to operator.
                         string msg;
                         SqlCommand cmd2 = new SqlCommand("INSERT INTO OPERATOR (NAME, ADMIN) VALUES(@user,@admin)", con);
                         cmd2.Parameters.AddWithValue("@user", user);
                         cmd2.Parameters.AddWithValue("@admin", 0);
 
-                        if (cmd2.ExecuteNonQuery() == 1)
+                        if (cmd2.ExecuteNonQuery() != 1)
                         {
                             //TBD
-                            msg = "New user saved!";
-                            Page.ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('"+msg+"')", true);
-                        }
-                        else
-                        {
-                            //TBD
-                            msg = "Failed to save new user!";
+                            msg = "Error: Failed trying to identify this computer. Please contact system admin!";
                             Page.ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "')", true);
                         }
                     }                 
@@ -58,7 +55,7 @@ namespace BarcodeConversion
             catch (Exception ex)
             {
                 //string msg = "You've not been found into our system. Contact the system admin.";
-                Page.ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + ex.Message + "\nYou've not been found into our system. Contact your System Admin." + "');", true);
+                Page.ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('Error: Something went wrong while attempting to identify this computer. Please contact your system admin.');", true);
             }
             if (isAdmin) settings.Visible = true;
 

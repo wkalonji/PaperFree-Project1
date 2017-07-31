@@ -54,7 +54,7 @@
     <asp:Panel ID="formPanel" runat="server">
         <asp:Panel ID="formPanelJobSelection" runat="server">
             <div style="margin-top:45px; margin-bottom:40px; height:50px; border-bottom:solid 1px green;width:899px;">
-                <h2 style="margin-top:45px">Job Selection</h2>
+                <h2 style="margin-top:45px">Index Setup</h2>
             </div>
             <asp:Button ID="selectJobBtn" Visible="false" runat="server" Text="Generate Jobs" onclick="selectJob_Click" />
 
@@ -69,7 +69,7 @@
                     </td>
                 </tr>
             </table> 
-            <asp:Panel ID="noJobsFound" Visible="false" runat="server"><h3> You do not currently have any job assigned to you.</h3> </asp:Panel>
+            <asp:Panel ID="noJobsFound" Visible="false" runat="server"><h3> No job is currently accessible.</h3> </asp:Panel>
         </asp:Panel>
         
         <asp:panel ID="indexCreationSection" Visible="false" runat="server" style="width:auto; margin:auto">           

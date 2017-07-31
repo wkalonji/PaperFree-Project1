@@ -49,6 +49,15 @@ namespace BarcodeConversion {
         protected global::System.Web.UI.WebControls.Panel jobSection;
         
         /// <summary>
+        /// selectAction control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList selectAction;
+        
+        /// <summary>
         /// jobAbb control.
         /// </summary>
         /// <remarks>
@@ -56,6 +65,24 @@ namespace BarcodeConversion {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox jobAbb;
+        
+        /// <summary>
+        /// selectJobList control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList selectJobList;
+        
+        /// <summary>
+        /// jobNameLabel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label jobNameLabel;
         
         /// <summary>
         /// jobName control.
@@ -67,6 +94,15 @@ namespace BarcodeConversion {
         protected global::System.Web.UI.WebControls.TextBox jobName;
         
         /// <summary>
+        /// jobActiveLabel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label jobActiveLabel;
+        
+        /// <summary>
         /// jobActiveBtn control.
         /// </summary>
         /// <remarks>
@@ -74,6 +110,15 @@ namespace BarcodeConversion {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.DropDownList jobActiveBtn;
+        
+        /// <summary>
+        /// jobAssignedToLabel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label jobAssignedToLabel;
         
         /// <summary>
         /// jobAssignedTo control.
@@ -85,24 +130,6 @@ namespace BarcodeConversion {
         protected global::System.Web.UI.WebControls.TextBox jobAssignedTo;
         
         /// <summary>
-        /// createJobBtn control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button createJobBtn;
-        
-        /// <summary>
-        /// Button7 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button Button7;
-        
-        /// <summary>
         /// deleteJobBtn control.
         /// </summary>
         /// <remarks>
@@ -112,13 +139,31 @@ namespace BarcodeConversion {
         protected global::System.Web.UI.WebControls.Button deleteJobBtn;
         
         /// <summary>
-        /// Button8 control.
+        /// editJobBtn control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button Button8;
+        protected global::System.Web.UI.WebControls.Button editJobBtn;
+        
+        /// <summary>
+        /// createJobBtn control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button createJobBtn;
+        
+        /// <summary>
+        /// success control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label success;
         
         /// <summary>
         /// newUserSection control.

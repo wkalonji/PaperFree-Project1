@@ -34,7 +34,7 @@
 
      <asp:Panel ID="indexStatusPanel" runat="server">
         <div style="margin-top:45px; margin-bottom:40px; height:50px; border-bottom:solid 1px green;width:899px;">
-            <h2 style="margin-top:35px;">View Index Status</h2>
+            <h2 style="margin-top:35px;">Index Status Report</h2>
         </div>   
         <div>           
             <table class = "table">

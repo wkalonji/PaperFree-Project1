@@ -101,8 +101,10 @@ namespace BarcodeConversion
                 opID = Helper.getUserId(user, con);
                 if (opID == 0)
                 {
-                    string msg = "You could not be found in our system. Try again or contact system admin.";
-                    ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                    description.Text = "No indexes found with the specified filter entries.";
+                    recordsPerPageLabel.Visible = false;
+                    recordsPerPage.Visible = false;
+                    sortOrder.Visible = false;
                     return;
                 }
                 string cmdString =  "SELECT NAME, JOB_ID, BARCODE, CREATION_TIME, PRINTED " +
@@ -117,17 +119,17 @@ namespace BarcodeConversion
                         if (what == "allSheets")
                         {
                             cmd = new SqlCommand(cmdString + "OPERATOR_ID=@opId", con);
-                            description.Text = "Your Indexes For All Time, Printed or Not.";
+                            description.Text = "Your Indexes for all Time.";
                         }
                         else if (what == "printed")
                         {
                             cmd = new SqlCommand(cmdString + "OPERATOR_ID =@opId AND PRINTED=1", con);
-                            description.Text = "Your Printed Indexes For All Time.";
+                            description.Text = "Your Printed Indexes for all Time.";
                         }
                         else if (what == "notPrinted")
                         {
                             cmd = new SqlCommand(cmdString + "OPERATOR_ID=@opId AND PRINTED=0", con);
-                            description.Text = "Your Unprinted Indexes For All Time.";
+                            description.Text = "Your Unprinted Indexes for all Time.";
                         }
                     }
                     else if(when == "pickRange")
@@ -150,17 +152,17 @@ namespace BarcodeConversion
                         if (what == "allSheets")
                         {
                             cmd = new SqlCommand(cmdString + "OPERATOR_ID=@opId AND (CREATION_TIME BETWEEN @start AND @end)  ", con);
-                            description.Text = "Your Indexes Between "+start+" and "+end+", Printed or Not.";
+                            description.Text = "Your Indexes from "+start+" to "+end+".";
                         }
                         else if (what == "printed")
                         {
                             cmd = new SqlCommand(cmdString + "OPERATOR_ID=@opId AND PRINTED=1 AND (CREATION_TIME BETWEEN @start AND @end)", con);
-                            description.Text = "Your Printed Indexes Between " + start + " and " + end + ".";
+                            description.Text = "Your Printed Indexes from " + start + " to " + end + ".";
                         }
                         else if (what == "notPrinted")
                         {
                             cmd = new SqlCommand(cmdString + "OPERATOR_ID=@opId AND PRINTED=0 AND (CREATION_TIME BETWEEN @start AND @end)", con);
-                            description.Text = "Your Unprinted Indexes Between " + start + " and " + end + ".";
+                            description.Text = "Your Unprinted Indexes from " + start + " to " + end + ".";
                         }
                         cmd.Parameters.AddWithValue("@start", start);
                         cmd.Parameters.AddWithValue("@end", end);
@@ -176,17 +178,17 @@ namespace BarcodeConversion
                         {
                             string cmdStringShort = cmdString;
                             cmd = new SqlCommand(cmdStringShort.Substring(0, cmdString.Length - 7), con);
-                            description.Text = "All Operators' Indexes For All Time, Printed or Not.";
+                            description.Text = "Operators' Indexes for all Time.";
                         }
                         else if (what == "printed")
                         {
                             cmd = new SqlCommand(cmdString + "PRINTED=1", con);
-                            description.Text = "All Operators' Printed Indexes For All Time.";
+                            description.Text = "Operators' Printed Indexes for all Time.";
                         }
                         else if (what == "notPrinted")
                         {
                             cmd = new SqlCommand(cmdString + "PRINTED=0", con);
-                            description.Text = "All Operators' Unprinted Indexes For All Time.";
+                            description.Text = "Operators' Unprinted Indexes for all Time.";
                         }
                     }
                     else if (when == "pickRange")
@@ -209,17 +211,17 @@ namespace BarcodeConversion
                         if (what == "allSheets")
                         {
                             cmd = new SqlCommand(cmdString + "CREATION_TIME BETWEEN @start AND @end", con);
-                            description.Text = "All Operators' Indexes Between " + start + " and " + end + ", Printed or Not.";
+                            description.Text = "Operators' Indexes from " + start + " to " + end + ".";
                         }
                         else if (what == "printed")
                         {
                             cmd = new SqlCommand(cmdString + "PRINTED=1 AND (CREATION_TIME BETWEEN @start AND @end)", con);
-                            description.Text = "All Operators' Printed Indexes Between " + start + " and " + end + ".";
+                            description.Text = "Operators' Printed Indexes From " + start + " to " + end + ".";
                         }
                         else if (what == "notPrinted")
                         {
                             cmd = new SqlCommand(cmdString + "PRINTED=0 AND (CREATION_TIME BETWEEN @start AND @end)", con);
-                            description.Text = "All Operators' Unprinted Indexes Between " + start + " and " + end + ".";
+                            description.Text = "Operators' Unprinted Indexes from " + start + " to " + end + ".";
                         }
                         cmd.Parameters.AddWithValue("@start", start);
                         cmd.Parameters.AddWithValue("@end", end);
@@ -242,14 +244,17 @@ namespace BarcodeConversion
                 if (indexeStatusGridView.Rows.Count == 0)
                 {
                     description.Text = "No indexes found with the specified filter entries.";
+                    gridHeader.Visible = true;
                     recordsPerPageLabel.Visible = false;
                     recordsPerPage.Visible = false;
+                    sortOrder.Visible = false;
                 }
                 else
                 {
                     gridHeader.Visible = true;
                     recordsPerPageLabel.Visible = true;
                     recordsPerPage.Visible = true;
+                    sortOrder.Visible = true;
                     indexeStatusGridView.Visible = true;
                 }
                 
