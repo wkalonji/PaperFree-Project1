@@ -58,21 +58,23 @@
         <div style="display:inline-block;">           
             <table style="margin-top:15px; width:100%;" runat="server">
                 <tr><td colspan="3" style="padding-bottom:40px;"><asp:Button ID="getUnprintedIndexes" Visible="true" runat="server" Text="Reset" onclick="getUnprintedIndexes_Click" /></td></tr>
-                <tr>
-                    <td><asp:Button ID="getBarcodeBtn" Visible="false" runat="server" Text="Show Barcodes" onclick="getBarcode_Click" /></td>
-                    <td style="text-align:right;padding-left:20px;">
-                        <asp:Button ID="deleteBtn" Visible="false" runat="server" Text="Delete Indexes" 
+                <tr style="background-color:aliceblue; height:40px;">
+                    <td style="padding-left:5px;"><asp:Button ID="getBarcodeBtn" Width="105" Visible="false" runat="server" Text="Show Barcodes" onclick="getBarcode_Click" /></td>
+                    <td style="text-align:center;">
+                        <asp:Button ID="deleteBtn" Width="105" Visible="false" runat="server" Text="Delete Indexes" 
                             OnClientClick="return confirm('Selected Indexes will be permanently deleted. Delete anyway?');" 
                             OnClick="deleteIndexes_Click" />
                     </td>
-                    <td style="text-align:right"><asp:Button ID="printBarcodeBtn" Visible="false" runat="server" Text="Print Barcodes" onclick="printBarcode_Click"/></td>
+                    <td style="text-align:right;padding-right:5px;"><asp:Button ID="printBarcodeBtn" Width="105" Visible="false" runat="server" Text="Print Barcodes" onclick="printBarcode_Click"/></td>
                 </tr>
                 <tr><td colspan="3" style="padding-top:30px;">
                         <h4 style="color:blue; display:inline"><asp:Label ID="description" Text="Your Unprinted Indexes" Visible="True" runat="server"></asp:Label></h4>
                     </td>
                 </tr>
+            </table>
+            <table style="width:100%;">
                 <tr >
-                    <td colspan="2" style="padding-top:10px;">
+                    <td style="padding-top:10px;">
                         <asp:Label ID="sortOrder" Text="Sorted By : CREATION_TIME ASC (Default)" runat="server"></asp:Label>
                     </td>
                     <td style="text-align:right;">

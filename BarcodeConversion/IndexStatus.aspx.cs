@@ -1,5 +1,6 @@
 ﻿using BarcodeConversion.App_Code;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Web.UI;
@@ -9,13 +10,13 @@ namespace BarcodeConversion
 {
     public partial class IndexStatus : System.Web.UI.Page
     {
-        SqlConnection con = Helper.ConnectionObj;
 
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
             {
-                getIndexes("meOnly", "allTime", "allSheets");
+                Session["jobsList"] = populateJobsList();
+                getIndexes("All Jobs", "meOnly", "allTime", "allSheets");
                 indexeStatusGridView.Visible = true;
             }
             // Make date fields entries persist
@@ -32,19 +33,100 @@ namespace BarcodeConversion
         // 'RESET' CLICKED: RESET FILTER TO DEFAULT VALUES. FUNCTION
         protected void reset_Click(object sender, EventArgs e)
         {
+            jobsFilter.SelectedValue = "All Jobs";
             whoFilter.SelectedValue = "meOnly";
             whenFilter.SelectedValue = "allTime";
             whatFilter.SelectedValue = "allSheets";
-            getIndexes("meOnly", "allTime", "allSheets");
+            getIndexes("All Jobs", "meOnly", "allTime", "allSheets");
             indexeStatusGridView.Visible = true;
             sortOrder.Text = "Sorted By : CREATION_TIME ASC (Default)";
         }
 
 
-        // 'WHO' & 'WHAT' FILTER CHANGED.
+
+        // 'ALL JOBS' DROPDOWN: POPULATE JOBSFILTER. HELPER FUNCTION
+        private Dictionary<int, string> populateJobsList()
+        {
+            jobsFilter.Items.Clear();
+            jobsFilter.Items.Add("All Jobs");
+
+            // First, get current user id via name.
+            string user = Environment.UserName;
+            List<int> jobIdList = new List<int>();
+            Dictionary<int, string> jobsDict = new Dictionary<int, string>();
+            SqlConnection con = Helper.ConnectionObj;
+
+            con.Open();
+            int opID = Helper.getUserId(user);
+            if (opID == 0)
+            {
+                con.Close();
+                return new Dictionary<int, string>();
+            }
+
+            // Then, get all job IDs accessible to current user from OPERATOR_ACCESS.
+            SqlCommand cmd2 = new SqlCommand("SELECT JOB_ID FROM OPERATOR_ACCESS WHERE OPERATOR_ACCESS.OPERATOR_ID = @userId", con);
+            cmd2.Parameters.AddWithValue("@userId", opID);
+            SqlDataReader reader2 = cmd2.ExecuteReader();
+            if (reader2.HasRows)
+            {
+                while (reader2.Read())
+                {
+                    int jobID = (int)reader2.GetValue(0);
+                    jobIdList.Add(jobID);
+                }
+                reader2.Close();
+            }
+            else
+            {
+                con.Close();
+                return new Dictionary<int, string>();
+            }
+
+            // Now, for each job ID, get corresponding job abbreviation.
+            if (jobIdList.Count > 0)
+            {
+                foreach (var jobId in jobIdList)
+                {
+                    SqlCommand cmd3 = new SqlCommand("SELECT ABBREVIATION FROM JOB WHERE ID = @job", con);
+                    cmd3.Parameters.AddWithValue("@job", jobId);
+                    SqlDataReader reader3 = cmd3.ExecuteReader();
+                    if (reader3.HasRows)
+                    {
+                        while (reader3.Read())
+                        {
+                            string jobAbb = (string)reader3.GetValue(0);
+                            jobsFilter.Items.Add(jobAbb);
+                            jobsDict.Add(jobId, jobAbb);
+                        }
+                        jobsFilter.AutoPostBack = true;
+                        reader3.Close();
+                    }
+                    else
+                    {
+                        string msg = "Some went wront while getting job abbreviations from job IDs.";
+                        ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                        con.Close();
+                        return new Dictionary<int, string>();
+                    }
+                }
+            }
+            else
+            {
+                string msg = "For some reason, jobIdList did not populate";
+                ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                con.Close();
+                return new Dictionary<int, string>();
+            }
+            con.Close();
+            return jobsDict;
+        }
+        
+
+        // 'JOBSFILTER', 'WHO' & 'WHAT' FILTER CHANGED.
         protected void onSelectedChange(object sender, EventArgs e)
         {
-            getIndexes(whoFilter.SelectedValue, whenFilter.SelectedValue, whatFilter.SelectedValue);
+            getIndexes(jobsFilter.SelectedValue, whoFilter.SelectedValue, whenFilter.SelectedValue, whatFilter.SelectedValue);
         }
 
         // 'WHEN' FILTER CHANGED.
@@ -54,7 +136,7 @@ namespace BarcodeConversion
             if (whenFilter.SelectedValue == "allTime")
             {
                 timePanel.Visible = false;
-                getIndexes(whoFilter.SelectedValue, whenFilter.SelectedValue, whatFilter.SelectedValue);
+                getIndexes(jobsFilter.SelectedValue, whoFilter.SelectedValue, whenFilter.SelectedValue, whatFilter.SelectedValue);
                 indexeStatusGridView.Visible = true;
             }
             else
@@ -70,7 +152,7 @@ namespace BarcodeConversion
         // 'SUBMIT' CLICKED: DATE FIELDS ENTERED.
         protected void submit_Click(object sender, EventArgs e)
         {
-            getIndexes(whoFilter.SelectedValue, whenFilter.SelectedValue, whatFilter.SelectedValue);
+            getIndexes(jobsFilter.SelectedValue, whoFilter.SelectedValue, whenFilter.SelectedValue, whatFilter.SelectedValue);
         }
 
 
@@ -79,154 +161,226 @@ namespace BarcodeConversion
         protected void pageChange_Click(object sender, GridViewPageEventArgs e)
         {
             indexeStatusGridView.PageIndex = e.NewPageIndex;
-            getIndexes(whoFilter.SelectedValue, whenFilter.SelectedValue, whatFilter.SelectedValue);
+            getIndexes(jobsFilter.SelectedValue, whoFilter.SelectedValue, whenFilter.SelectedValue, whatFilter.SelectedValue);
         }
 
 
 
         // GET FILTERED INDEXES. HELPER FUNCTION
-        protected void getIndexes(string who, string when, string what)
+        protected void getIndexes(string jobAbb, string who, string when, string what)
         {
             Page.Validate();
+            if (!Page.IsValid) return;
+            SqlConnection con = Helper.ConnectionObj;
+
+            // First, populate 'All Jobs' filter
+            Dictionary<int, string> jobsDict = (Dictionary<int, string>)Session["jobsList"];
+            
             string user = Environment.UserName;
-            int opID = 0;
+            int opID = Helper.getUserId(user);
+            if (opID == 0 || jobsDict.Count == 0)
+            {
+                description.Text = "No indexes found with the specified filter entries.";
+                recordsPerPageLabel.Visible = false;
+                recordsPerPage.Visible = false;
+                sortOrder.Visible = false;
+                return;
+            }
+
+            // Get job ID of selected Job
+            int jobID = 0;
+            foreach (var jobTuple in jobsDict)
+            {
+                if (jobTuple.Value == jobAbb) jobID = jobTuple.Key;
+            }
+            string cmdString =  "SELECT NAME, JOB_ID, BARCODE, CREATION_TIME, PRINTED " +
+                                "FROM INDEX_DATA " +
+                                "INNER JOIN OPERATOR ON INDEX_DATA.OPERATOR_ID=OPERATOR.ID WHERE ";
+            
+            //
             SqlCommand cmd = null;
             SqlDataAdapter da = null;
             DataSet ds = null;
-            try
+            
+            con.Open();
+            if (who == "meOnly")
             {
-                //Get unprinted indexes from DB
-                if (!Page.IsValid) return;
-                con.Open();
-                opID = Helper.getUserId(user, con);
-                if (opID == 0)
+                if(when == "allTime")
                 {
-                    description.Text = "No indexes found with the specified filter entries.";
-                    recordsPerPageLabel.Visible = false;
-                    recordsPerPage.Visible = false;
-                    sortOrder.Visible = false;
-                    return;
-                }
-                string cmdString =  "SELECT NAME, JOB_ID, BARCODE, CREATION_TIME, PRINTED " +
-                                    "FROM INDEX_DATA " +
-                                    "INNER JOIN OPERATOR ON INDEX_DATA.OPERATOR_ID=OPERATOR.ID WHERE ";
-
-                if(who == "meOnly")
-                {
-                    if(when == "allTime")
+                    timePanel.Visible = false;
+                    if (what == "allSheets")
                     {
-                        timePanel.Visible = false;
-                        if (what == "allSheets")
+                        if (jobAbb == "All Jobs") cmd = new SqlCommand(cmdString + "OPERATOR_ID=@opId", con);
+                        else
                         {
-                            cmd = new SqlCommand(cmdString + "OPERATOR_ID=@opId", con);
-                            description.Text = "Your Indexes for all Time.";
+                            cmd = new SqlCommand(cmdString + "OPERATOR_ID=@opId AND JOB_ID=@jobID", con);
+                            cmd.Parameters.AddWithValue("@jobID", jobID);
                         }
-                        else if (what == "printed")
+                        description.Text = "Your Indexes for all Time.";
+                    } 
+                    else if (what == "printed")
+                    {
+                        if (jobAbb == "All Jobs") cmd = new SqlCommand(cmdString + "OPERATOR_ID=@opId AND PRINTED=1", con);
+                        else
                         {
-                            cmd = new SqlCommand(cmdString + "OPERATOR_ID =@opId AND PRINTED=1", con);
-                            description.Text = "Your Printed Indexes for all Time.";
+                            cmd = new SqlCommand(cmdString + "OPERATOR_ID=@opId AND JOB_ID=@jobID AND PRINTED=1", con);
+                            cmd.Parameters.AddWithValue("@jobID", jobID);
                         }
-                        else if (what == "notPrinted")
-                        {
-                            cmd = new SqlCommand(cmdString + "OPERATOR_ID=@opId AND PRINTED=0", con);
-                            description.Text = "Your Unprinted Indexes for all Time.";
-                        }
+                        description.Text = "Your Printed Indexes for all Time.";
                     }
-                    else if(when == "pickRange")
+                    else if (what == "notPrinted")
                     {
-                        DateTime start = DateTime.Parse(Request.Form[from.UniqueID]);
-                        DateTime end = DateTime.Parse(Request.Form[to.UniqueID]);
-                        if (start == default(DateTime))
+                        if(jobAbb == "All Jobs") cmd = new SqlCommand(cmdString + "OPERATOR_ID=@opId AND PRINTED=0", con);
+                        else
                         {
-                            string msg = "Please pick a start date.";
-                            ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
-                            return;
+                            cmd = new SqlCommand(cmdString + "OPERATOR_ID=@opId AND JOB_ID=@jobID AND PRINTED=0", con);
+                            cmd.Parameters.AddWithValue("@jobID", jobID);
                         }
-                        if(end == default(DateTime))
-                        {
-                            string msg = "Please pick an end date.";
-                            ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
-                            return;
-                        }
+                        description.Text = "Your Unprinted Indexes for all Time.";
+                    }
+                }
+                else if(when == "pickRange")
+                {
+                    DateTime start = DateTime.Parse(Request.Form[from.UniqueID]);
+                    DateTime end = DateTime.Parse(Request.Form[to.UniqueID]);
+                    if (start == default(DateTime))
+                    {
+                        string msg = "Please pick a start date.";
+                        ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                        return;
+                    }
+                    if(end == default(DateTime))
+                    {
+                        string msg = "Please pick an end date.";
+                        ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                        return;
+                    }
                         
-                        if (what == "allSheets")
+                    if (what == "allSheets")
+                    {
+                        if(jobAbb == "All Jobs") cmd = new SqlCommand(cmdString + "OPERATOR_ID=@opId AND (CREATION_TIME BETWEEN @start AND @end)", con);
+                        else
                         {
-                            cmd = new SqlCommand(cmdString + "OPERATOR_ID=@opId AND (CREATION_TIME BETWEEN @start AND @end)  ", con);
-                            description.Text = "Your Indexes from "+start+" to "+end+".";
+                            cmd = new SqlCommand(cmdString + "OPERATOR_ID=@opId AND JOB_ID=@jobID AND (CREATION_TIME BETWEEN @start AND @end)", con);
+                            cmd.Parameters.AddWithValue("@jobID", jobID);
                         }
-                        else if (what == "printed")
-                        {
-                            cmd = new SqlCommand(cmdString + "OPERATOR_ID=@opId AND PRINTED=1 AND (CREATION_TIME BETWEEN @start AND @end)", con);
-                            description.Text = "Your Printed Indexes from " + start + " to " + end + ".";
-                        }
-                        else if (what == "notPrinted")
-                        {
-                            cmd = new SqlCommand(cmdString + "OPERATOR_ID=@opId AND PRINTED=0 AND (CREATION_TIME BETWEEN @start AND @end)", con);
-                            description.Text = "Your Unprinted Indexes from " + start + " to " + end + ".";
-                        }
-                        cmd.Parameters.AddWithValue("@start", start);
-                        cmd.Parameters.AddWithValue("@end", end);
+                        description.Text = "Your Indexes from "+start+" to "+end+".";
                     }
-                    cmd.Parameters.AddWithValue("@opId", opID);
+                    else if (what == "printed")
+                    {
+                        if (jobAbb == "All Jobs") cmd = new SqlCommand(cmdString + "OPERATOR_ID=@opId AND PRINTED=1 AND (CREATION_TIME BETWEEN @start AND @end)", con);
+                        else
+                        {
+                            cmd = new SqlCommand(cmdString + "OPERATOR_ID=@opId AND JOB_ID=@jobID AND PRINTED=1 AND (CREATION_TIME BETWEEN @start AND @end)", con);
+                            cmd.Parameters.AddWithValue("@jobID", jobID);
+                        }
+                        description.Text = "Your Printed Indexes from " + start + " to " + end + ".";
+                    }
+                    else if (what == "notPrinted")
+                    {
+                        if (jobAbb == "All Jobs") cmd = new SqlCommand(cmdString + "OPERATOR_ID=@opId AND PRINTED=0 AND (CREATION_TIME BETWEEN @start AND @end)", con);
+                        else
+                        {
+                            cmd = new SqlCommand(cmdString + "OPERATOR_ID=@opId AND JOB_ID=@jobID AND PRINTED=0 AND (CREATION_TIME BETWEEN @start AND @end)", con);
+                            cmd.Parameters.AddWithValue("@jobID", jobID);
+                        }
+                        description.Text = "Your Unprinted Indexes from " + start + " to " + end + ".";
+                    }
+                    cmd.Parameters.AddWithValue("@start", start);
+                    cmd.Parameters.AddWithValue("@end", end);
                 }
-                else if(who == "everyone")
+                cmd.Parameters.AddWithValue("@opId", opID);
+            }
+            else if(who == "everyone")
+            {
+                if (when == "allTime")
                 {
-                    if (when == "allTime")
+                    timePanel.Visible = false;
+                    if (what == "allSheets")
                     {
-                        timePanel.Visible = false;
-                        if (what == "allSheets")
+                        string cmdStringShort = cmdString;
+                        if(jobAbb == "All Jobs") cmd = new SqlCommand(cmdStringShort.Substring(0, cmdString.Length - 7), con);
+                        else
                         {
-                            string cmdStringShort = cmdString;
-                            cmd = new SqlCommand(cmdStringShort.Substring(0, cmdString.Length - 7), con);
-                            description.Text = "Operators' Indexes for all Time.";
+                            cmd = new SqlCommand(cmdStringShort.Substring(0, cmdString.Length - 7) + " WHERE JOB_ID=@jobID", con);
+                            cmd.Parameters.AddWithValue("@jobID", jobID);
                         }
-                        else if (what == "printed")
-                        {
-                            cmd = new SqlCommand(cmdString + "PRINTED=1", con);
-                            description.Text = "Operators' Printed Indexes for all Time.";
-                        }
-                        else if (what == "notPrinted")
-                        {
-                            cmd = new SqlCommand(cmdString + "PRINTED=0", con);
-                            description.Text = "Operators' Unprinted Indexes for all Time.";
-                        }
+                        description.Text = "Operators' Indexes for all Time.";
                     }
-                    else if (when == "pickRange")
+                    else if (what == "printed")
                     {
-                        DateTime start = DateTime.Parse(Request.Form[from.UniqueID]);
-                        DateTime end = DateTime.Parse(Request.Form[to.UniqueID]);
-                        if (start == default(DateTime))
+                        if (jobAbb == "All Jobs") cmd = new SqlCommand(cmdString + "PRINTED=1", con);
+                        else
                         {
-                            string msg = "Please pick a start date.";
-                            ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
-                            return;
+                            cmd = new SqlCommand(cmdString + "JOB_ID=@jobID AND PRINTED=1", con);
+                            cmd.Parameters.AddWithValue("@jobID", jobID);
                         }
-                        if (end == default(DateTime))
+                        description.Text = "Operators' Printed Indexes for all Time.";
+                    }
+                    else if (what == "notPrinted")
+                    {
+                        if (jobAbb == "All Jobs") cmd = new SqlCommand(cmdString + "PRINTED=0", con);
+                        else
                         {
-                            string msg = "Please pick an end date.";
-                            ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
-                            return;
+                            cmd = new SqlCommand(cmdString + "JOB_ID=@jobID AND PRINTED=0", con);
+                            cmd.Parameters.AddWithValue("@jobID", jobID);
                         }
-
-                        if (what == "allSheets")
-                        {
-                            cmd = new SqlCommand(cmdString + "CREATION_TIME BETWEEN @start AND @end", con);
-                            description.Text = "Operators' Indexes from " + start + " to " + end + ".";
-                        }
-                        else if (what == "printed")
-                        {
-                            cmd = new SqlCommand(cmdString + "PRINTED=1 AND (CREATION_TIME BETWEEN @start AND @end)", con);
-                            description.Text = "Operators' Printed Indexes From " + start + " to " + end + ".";
-                        }
-                        else if (what == "notPrinted")
-                        {
-                            cmd = new SqlCommand(cmdString + "PRINTED=0 AND (CREATION_TIME BETWEEN @start AND @end)", con);
-                            description.Text = "Operators' Unprinted Indexes from " + start + " to " + end + ".";
-                        }
-                        cmd.Parameters.AddWithValue("@start", start);
-                        cmd.Parameters.AddWithValue("@end", end);
+                        description.Text = "Operators' Unprinted Indexes for all Time.";
                     }
                 }
+                else if (when == "pickRange")
+                {
+                    DateTime start = DateTime.Parse(Request.Form[from.UniqueID]);
+                    DateTime end = DateTime.Parse(Request.Form[to.UniqueID]);
+                    if (start == default(DateTime))
+                    {
+                        string msg = "Please pick a start date.";
+                        ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                        return;
+                    }
+                    if (end == default(DateTime))
+                    {
+                        string msg = "Please pick an end date.";
+                        ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                        return;
+                    }
+
+                    if (what == "allSheets")
+                    {
+                        if(jobAbb == "All Jobs") cmd = new SqlCommand(cmdString + "CREATION_TIME BETWEEN @start AND @end", con);
+                        else
+                        {
+                            cmd = new SqlCommand(cmdString + "JOB_ID=@jobID AND CREATION_TIME BETWEEN @start AND @end", con);
+                            cmd.Parameters.AddWithValue("@jobID", jobID);
+                        }
+                        description.Text = "Operators' Indexes from " + start + " to " + end + ".";
+                    }
+                    else if (what == "printed")
+                    {
+                        if (jobAbb == "All Jobs") cmd = new SqlCommand(cmdString + "PRINTED=1 AND (CREATION_TIME BETWEEN @start AND @end)", con);
+                        else
+                        {
+                            cmd = new SqlCommand(cmdString + "JOB_ID=@jobID AND PRINTED=1 AND (CREATION_TIME BETWEEN @start AND @end)", con);
+                            cmd.Parameters.AddWithValue("@jobID", jobID);
+                        }
+                        description.Text = "Operators' Printed Indexes From " + start + " to " + end + ".";
+                    }
+                    else if (what == "notPrinted")
+                    {
+                        if (jobAbb == "All Jobs") cmd = new SqlCommand(cmdString + "PRINTED=0 AND (CREATION_TIME BETWEEN @start AND @end)", con);
+                        else
+                        {
+                            cmd = new SqlCommand(cmdString + "JOB_ID=@jobID AND PRINTED=0 AND (CREATION_TIME BETWEEN @start AND @end)", con);
+                            cmd.Parameters.AddWithValue("@jobID", jobID);
+                        }
+                        description.Text = "Operators' Unprinted Indexes from " + start + " to " + end + ".";
+                    }
+                    cmd.Parameters.AddWithValue("@start", start);
+                    cmd.Parameters.AddWithValue("@end", end);
+                }
+            }
+
+            try { 
                 da = new SqlDataAdapter(cmd);
                 ds = new DataSet();
                 da.Fill(ds);
@@ -293,7 +447,7 @@ namespace BarcodeConversion
         protected void onSelectedRecordsPerPage(object sender, EventArgs e)
         {
             indexeStatusGridView.PageSize = Int32.Parse(recordsPerPage.SelectedValue);
-            getIndexes(whoFilter.SelectedValue, whenFilter.SelectedValue, whatFilter.SelectedValue);
+            getIndexes(jobsFilter.SelectedValue, whoFilter.SelectedValue, whenFilter.SelectedValue, whatFilter.SelectedValue);
             sortOrder.Text = "Sorted By : CREATION_TIME ASC (Default)";
         }
 

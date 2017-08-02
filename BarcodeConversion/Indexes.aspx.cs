@@ -11,7 +11,6 @@ namespace BarcodeConversion
 {
     public partial class About : Page
     {
-        SqlConnection con = Helper.ConnectionObj;
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -29,6 +28,7 @@ namespace BarcodeConversion
         protected void getUnprintedIndexes_Click(object sender, EventArgs e)
         {
             Page.Validate();
+            SqlConnection con = Helper.ConnectionObj;
             string user = Environment.UserName;
             int opID = 0;
             SqlCommand cmd = null;
@@ -39,7 +39,7 @@ namespace BarcodeConversion
                 //Get unprinted indexes from DB
                 if (!Page.IsValid) return;
                 con.Open();
-                opID = Helper.getUserId(user, con);
+                opID = Helper.getUserId(user);
                 if (opID == 0)
                 {
                     string msg = "You could not be found in our system. Try again or contact system admin.";
@@ -117,10 +117,11 @@ namespace BarcodeConversion
 
 
 
-        // 'DELETE INDEXES' CLICKED: DELETE CHECKED INDEXES. FUNCTION
+        // 'DELETE INDEXES' CLICKED: DELETE CHECKED INDEXES. FUNCTION 
         protected void deleteIndexes_Click(object sender, EventArgs e)
         {
             if (!Page.IsValid) return;
+            SqlConnection con = Helper.ConnectionObj;
             var check = 0; 
             var counter = 0;
             string jobDone;
@@ -149,7 +150,7 @@ namespace BarcodeConversion
 
                 // First, get current user ID
                 string user = Environment.UserName;
-                int opID = Helper.getUserId(user, con);
+                int opID = Helper.getUserId(user);
                 if (opID == 0)
                 {
                     string msg = "You could not be found in our system. Try again or contact system admin.";
@@ -261,6 +262,7 @@ namespace BarcodeConversion
         // 'PRINT BARCODE' CLICKED: PRINT INDEX BARCODES SHEETS FOR SELECTED INDEXES. FUNCTION
         protected void printBarcode_Click(object sender, EventArgs e)
         {
+            SqlConnection con = Helper.ConnectionObj;
             // Hide all current html.
             unprintedIndexesPanel.Visible = false;
             bool boxChecked = false;
@@ -392,6 +394,7 @@ namespace BarcodeConversion
         protected void setIndexAsPrinted_Click(object sender, EventArgs e)
         {
             if (!Page.IsValid) return;
+            SqlConnection con = Helper.ConnectionObj;
             var counter = 0;
             
             con.Open();
@@ -495,7 +498,7 @@ namespace BarcodeConversion
             DataTable dt = Session["Table"] as DataTable;
 
             if (dt != null)
-            {
+            {   
                 //Sort the data.
                 dt.DefaultView.Sort = e.SortExpression + " " + GetSortDirection(e.SortExpression);
                 sortOrder.Text = "Sorted By : " + dt.DefaultView.Sort;
@@ -529,7 +532,7 @@ namespace BarcodeConversion
             }
 
             // Save new values in ViewState.
-            ViewState["SortDirec"] = sortDirection;
+            ViewState["SortDirect"] = sortDirection;
             ViewState["SortExpres"] = column;
 
             return sortDirection;

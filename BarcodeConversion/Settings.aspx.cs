@@ -13,12 +13,11 @@ namespace BarcodeConversion
 {
     public partial class Contact : Page
     {
-        SqlConnection con = Helper.ConnectionObj;
-
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!Page.IsPostBack) jobAbb.Focus();
-            setDropdownColor(con);
+            setDropdownColor();
+            getDropdownJobItems();
             success.Visible = false;
         }
 
@@ -74,6 +73,7 @@ namespace BarcodeConversion
         protected void createJob_Click(object sender, EventArgs e)
         {
             if (!Page.IsValid) return;
+            SqlConnection con = Helper.ConnectionObj;
             con.Open();
 
             if (this.jobAbb.Text == string.Empty)
@@ -151,6 +151,7 @@ namespace BarcodeConversion
         protected void editJob_Click(object sender, EventArgs e)
         {
             if (!Page.IsValid) return;
+            SqlConnection con = Helper.ConnectionObj;
             con.Open();
             
             // Edit job
@@ -183,7 +184,7 @@ namespace BarcodeConversion
                     if (jobAssignedTo.Visible = true && jobAssignedTo.Text != string.Empty)
                     {
                         string assignee = jobAssignedTo.Text;
-                        string abbr = jobAbb.Text;
+                        string abbr = this.selectJobList.SelectedValue;
                         bool answer = AssignJob(assignee, abbr, con); // calling assignJob function
                         if (answer == true)
                         {
@@ -209,7 +210,7 @@ namespace BarcodeConversion
                     con.Close();
                     getDropdownJobItems();
                     getActiveJobs();
-                    getUnassignedJobs();
+                    getUnassignedJobs(null);
                 }
                 else
                 {
@@ -235,7 +236,7 @@ namespace BarcodeConversion
         protected void deleteJob_Click(object sender, EventArgs e)
         {
             int jobID = 0;
-            
+            SqlConnection con = Helper.ConnectionObj;
             con.Open();
             if (selectJobList.SelectedValue != "Select")
             {
@@ -253,7 +254,7 @@ namespace BarcodeConversion
                 }
                 else
                 {
-                    string msg = "Specified job does not exist, thus can't be deleted!";
+                    string msg = "Specified job does not exist, thus cannot be deleted!";
                     ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
                     jobFormClear();
                     jobAssignedToLabel.Visible = false;
@@ -342,7 +343,7 @@ namespace BarcodeConversion
                 if (user.Text != null)
                 {
                     // If user exists, set Admin status
-                    
+                    SqlConnection con = Helper.ConnectionObj;
                     con.Open();
 
                     SqlCommand cmd = new SqlCommand("UPDATE OPERATOR SET ADMIN = @admin WHERE NAME = @user", con);
@@ -475,19 +476,17 @@ namespace BarcodeConversion
 
 
 
-        // 'JOB ACCESS SECTION' CLICKED: HIDE/SHOW JOB-ACCESS SECTION & PULL UNASSIGNED JOBS
+        // 'JOB ACCESS SECTION' CLICKED: HIDE/SHOW JOB-ACCESS SECTION & PULL InnaccessibleED JOBS
         protected void assignShow_Click(object sender, EventArgs e)
         {
             if (assignPanel.Visible == false)
             {
-                deleteAssignedBtn.Visible = false;
                 Page.Validate();
                 assignPanel.Visible = true;
-                jobsLabel.Text = "Currently Unassigned Jobs";
                 assignee.Text = string.Empty;
                 assignee.Focus();
                 // Get all unassigned jobs
-                getUnassignedJobs();
+                getUnassignedJobs(null);
             }
             else
             {
@@ -498,9 +497,10 @@ namespace BarcodeConversion
 
 
         
-        // 'ASSIGNED' CLICKED: GET ALL ASSIGNED JOBS. FUNCTION
+        // 'ACCESSIBLE' CLICKED: GET OP'S ACCESSIBLE JOBS. FUNCTION
         protected void assignedJob_Click(object sender, EventArgs e)
-        {         
+        {
+            SqlConnection con = Helper.ConnectionObj;
             con.Open();
             if(assignee.Text == string.Empty)
             {
@@ -558,8 +558,7 @@ namespace BarcodeConversion
                             jobAccessGridView.Visible = false;
                             jobAccessBtn.Visible = false;
                             deleteAssignedBtn.Visible = false;
-                            string noJobs = "There are no assigned jobs for this operator.";
-                            ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + noJobs + "');", true);
+                            jobsLabel.Text = "No Accessible Jobs Found.";
                             assignee.Focus();
                         }
                         else
@@ -604,23 +603,22 @@ namespace BarcodeConversion
             
         }
 
+        
 
 
-        // 'UNASSIGNED' CLICKED: GET OPERATOR UNASSIGNED JOBS. FUNCTION
+        // 'UNASSIGNED' CLICKED: GET ALL JOBS. FUNCTION
         protected void unassignedJob_Click(object sender, EventArgs e)
         {
-            deleteAssignedBtn.Visible = false;
-            jobsLabel.Text = "Currently Unassigned Jobs";
-            getUnassignedJobs();
+            getUnassignedJobs(sender);
             assignee.Focus();
         }
 
 
 
-        // 'UNASSIGN' CLICKED: REMOVE OPERATOR ACCESS TO JOBS. FUNCTION
+        // 'DENY' CLICKED: REMOVE OPERATOR ACCESS TO JOBS. FUNCTION
         protected void deleteAssigned_Click(object sender, EventArgs e)
         {
-            
+            SqlConnection con = Helper.ConnectionObj;
             con.Open();
             if (assignee.Text == string.Empty)
             {
@@ -677,7 +675,7 @@ namespace BarcodeConversion
                         }
                         else
                         {
-                            string msg = "Assigned job '"+ row.Cells[2].Text + "' could not be found!";
+                            string msg = "Assigned job "+ row.Cells[2].Text + " could not be found!";
                             ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
                             assignee.Focus();
                             con.Close();
@@ -694,7 +692,7 @@ namespace BarcodeConversion
                         }
                         else
                         {
-                            string msg = "Job: '" + row.Cells[2].Text + "' could not be removed! Please try again or contact Tech Support";
+                            string msg = "Job: " + row.Cells[2].Text + " could not be removed! Please try again or contact Tech Support";
                             ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
                             con.Close();
                             assignedJob_Click(new object(), new EventArgs());
@@ -712,7 +710,7 @@ namespace BarcodeConversion
                 }
                 else
                 {
-                    string msg = count + " Job(s) successfully unassigned!";
+                    string msg = count + " Job(s) Unassigned!";
                     ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
                     assignee.Focus();
                     con.Close();
@@ -724,10 +722,10 @@ namespace BarcodeConversion
 
 
 
-        // 'ASSIGN' CLICKED: ASSIGN OPERATORS JOB-ACCESSES. FUNCTION
+        // 'GRANT' CLICKED: ASSIGN OPERATORS JOB-ACCESSES. FUNCTION
         protected void jobAccess_Click(object sender, EventArgs e)
         {
-            
+            SqlConnection con = Helper.ConnectionObj;
             con.Open();
 
             string assigneeName = assignee.Text;
@@ -771,16 +769,16 @@ namespace BarcodeConversion
                     }
                     else
                     {
-                        string msg = count + " job(s) were successfully assigned.";
+                        string msg = count + " job(s) successfully assigned.";
                         ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
-                        getUnassignedJobs();
+                        getUnassignedJobs(null);
                         assignee.Focus();
                         return;
                     }
                 }
                 else
                 {
-                    string msg = "No unassigned job record could be found.";
+                    string msg = "No Unassigned job record could be found.";
                     ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
                     return;
                 }
@@ -812,20 +810,15 @@ namespace BarcodeConversion
         // SET COLOR FOR DROPDOWN CONFIGURED JOB ITEMS. FUNCTION
         protected void onJobSelect(object sender, EventArgs e)
         {
-            setDropdownColor(con);
+            //setDropdownColor();
         }
 
-        // 'JOB ABBR' SELECT: SET COLOR FOR DROPDOWN ACTIVE JOB ITEMS. FUNCTION
-        protected void onJobAbbSelect(object sender, EventArgs e)
-        {
-            //getDropdownJobItems();
-        }
 
 
         // 'ACTIVE' SELECTED: SET 'ASSIGN TO' VISIBLE OR NOT
         protected void onActiveSelect(object sender, EventArgs e)
         {
-            if(jobActiveBtn.Visible && jobActiveBtn.SelectedValue == "True")
+            if(jobActiveBtn.Visible && jobActiveBtn.SelectedValue == "1")
             {
                 jobAssignedToLabel.Visible = true;
                 jobAssignedTo.Visible = true;
@@ -842,6 +835,7 @@ namespace BarcodeConversion
         // 'SET' CLICKED: SET INDEX FORM RULES. FUNCTION
         protected void setRules_Click(object sender, EventArgs e)
         {
+            SqlConnection con = Helper.ConnectionObj;
             con.Open();
 
             int jobID = 0;
@@ -917,13 +911,13 @@ namespace BarcodeConversion
                         string msg = selectJob.SelectedValue + " Job config successfully set.";
                         ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
                         con.Close();
-                        setDropdownColor(con);
+                        setDropdownColor();
                         clearRules();
                         return;
                     }
                     else
                     {
-                        string msg = "Config couln't be set. Please contact Tech support.";
+                        string msg = "Config could not be set. Please contact system admin.";
                         ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
                         clearRules();
                         con.Close();
@@ -945,6 +939,7 @@ namespace BarcodeConversion
         // 'UNSET' CLICKED: UNSET INPUT-CONTROLS RULES. FUNCTION.
         protected void unsetRules_Click(object sender, EventArgs e)
         {
+            SqlConnection con = Helper.ConnectionObj;
             con.Open();
             int jobID = 0;
 
@@ -990,13 +985,13 @@ namespace BarcodeConversion
                         string msg = selectJob.SelectedValue + " Job config successfully unset.";
                         ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
                         con.Close();
-                        setDropdownColor(con);
+                        setDropdownColor();
                         clearRules();
                         return;
                     }
                     else
                     {
-                        string msg = "Config couln't be unset. Please contact system admin.";
+                        string msg = "Config could not be unset. Please contact system admin.";
                         ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
                         clearRules();
                         con.Close();
@@ -1006,7 +1001,7 @@ namespace BarcodeConversion
                 {
                     clearRules();
                     con.Close();
-                    string msg = "Configuration rules for the selected job has already been unset. If you want to reconfigure, Make sure it's selected, then Set!";
+                    string msg = "Configuration rules for the selected job has already been unset. If you want to reconfigure, Make sure it is selected, then Set!";
                     ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
                 }
             }
@@ -1023,7 +1018,7 @@ namespace BarcodeConversion
                     collapseAll.Text = "Hide All";
                     jobSection.Visible = true;
                     newUserSection.Visible = true;
-                    getUnassignedJobs();
+                    getUnassignedJobs(null);
                     assignPanel.Visible = true;
                     jobIndexEditingPanel.Visible = true;
                     getDropdownJobItems();
@@ -1044,29 +1039,89 @@ namespace BarcodeConversion
 
 
 
-        // GET ALL UNASSIGNED JOBS. HELPER FUNCTION
-        private void getUnassignedJobs()
+        // GET ALL UNASSIGNED JOBS OR OPERATOR'S INACCESSIBLE JOBS. HELPER FUNCTION
+        private void getUnassignedJobs(Object sender)
         {
-            SqlConnection con = null;
             SqlCommand cmd = null;
             SqlDataAdapter da = null;
             DataSet ds = null;
+            string assigneeName=string.Empty;
+            int opID = 0;
+            SqlConnection con = Helper.ConnectionObj;
+            Button button = (Button)sender;
+            string buttonId = string.Empty;
+            if(button != null) buttonId = button.ID;
+            con.Open();
+
+            if(button != null && buttonId == "inaccessibleBtn")
+            {
+                if (assignee.Text != string.Empty) assigneeName = assignee.Text;
+                else
+                {
+                    string msg = "Operator field required.";
+                    ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                    con.Close();
+                    return;
+                }
+
+                // First check if the assignee exists. If so, get ID.
+                SqlCommand cmd2 = new SqlCommand("SELECT ID FROM OPERATOR WHERE NAME = @assignedTo", con);
+                cmd2.Parameters.AddWithValue("@assignedTo", assigneeName);
+
+                try
+                {
+                    SqlDataReader reader = cmd2.ExecuteReader();
+                    if (reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            opID = (int)reader.GetValue(0);
+                        }
+                        reader.Close();
+                    }
+                    else
+                    {
+                        string msg = "Operator entered could not be found.";
+                        ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                        con.Close();
+                        return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    string msg = "Error: An error occured. Contact system admin .";
+                    ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                    con.Close();
+                    return;
+                }
+            }
+
+
             try
             {
                 //if (!Page.IsValid) return;
-                con = new SqlConnection(@"Data Source=GLORY-PC\SQLEXPRESS;Initial Catalog=ImagePRO;Integrated Security=True");
-                cmd = new SqlCommand("SELECT ABBREVIATION " +
-                                     "FROM JOB " +
-                                     "LEFT JOIN OPERATOR_ACCESS ON JOB.ID = OPERATOR_ACCESS.JOB_ID " +
-                                     "WHERE JOB.ACTIVE = 1 AND OPERATOR_ACCESS.JOB_ID IS NULL", con);
-                con.Open();
+                if(button != null && buttonId == "inaccessibleBtn")
+                {
+                    cmd = new SqlCommand("SELECT ABBREVIATION " +
+                                         "FROM JOB " +
+                                         "WHERE ACTIVE = 1 AND ID NOT IN (SELECT JOB_ID FROM OPERATOR_ACCESS WHERE OPERATOR_ID=@opId)", con);
+                    cmd.Parameters.AddWithValue("@opId", opID);
+                }
+                else
+                {
+                    cmd = new SqlCommand("SELECT ABBREVIATION " +
+                                         "FROM JOB " +
+                                         "LEFT JOIN OPERATOR_ACCESS ON JOB.ID = OPERATOR_ACCESS.JOB_ID " +
+                                         "WHERE JOB.ACTIVE = 1 AND OPERATOR_ACCESS.JOB_ID IS NULL", con);
+                }
+
                 da = new SqlDataAdapter(cmd);
                 ds = new DataSet();
                 da.Fill(ds);
                 if (ds.Tables.Count > 0)
                 {
                     jobAccessGridView.DataSource = ds.Tables[0];
-                    //indexesGridView.AllowPaging = true;
                     jobAccessGridView.DataBind();
                     jobAccessGridView.Visible = true;
                 }
@@ -1077,15 +1132,18 @@ namespace BarcodeConversion
                 {
                     jobAccessGridView.Visible = false;
                     jobAccessBtn.Visible = false;
-
-                    jobsLabel.Text = "No Unassigned Jobs to display.";
                     deleteAssignedBtn.Visible = false;
+                    if (buttonId == "inaccessibleBtn") jobsLabel.Text = "No Inaccessible Jobs Found.";
+                    else jobsLabel.Text = "No Unassigned Jobs Found.";
+                    jobsLabel.Visible = true;
                 }
                 else
                 {
+                    if (buttonId == "inaccessibleBtn") jobsLabel.Text = "Operator's Currently Inaccessible Jobs.";
+                    else jobsLabel.Text = "Jobs Currently Inaccessible to Anyone.";
+                    jobsLabel.Visible = true;
                     jobAccessBtn.Visible = true;
-                    jobsLabel.Text = "Currently Unassingned Jobs.";
-                    deleteAssignedBtn.Visible = true;
+                    deleteAssignedBtn.Visible = false;
                 }
             }
             catch (SqlException ex)
@@ -1120,6 +1178,7 @@ namespace BarcodeConversion
         {
             selectJobList.Items.Clear();
             selectJobList.Items.Add("Select");
+            SqlConnection con = Helper.ConnectionObj;
             SqlCommand cmd = new SqlCommand("SELECT ABBREVIATION, ACTIVE FROM JOB", con);
             con.Open();
 
@@ -1142,7 +1201,7 @@ namespace BarcodeConversion
                             }
                         }
                     }
-                    selectJobList.AutoPostBack = true;
+                    //selectJobList.AutoPostBack = true;
                 }
                 reader.Close();
             }
@@ -1166,6 +1225,7 @@ namespace BarcodeConversion
         {
             selectJob.Items.Clear();
             selectJob.Items.Add("Select");
+            SqlConnection con = Helper.ConnectionObj;
             SqlCommand cmd = new SqlCommand("SELECT ABBREVIATION FROM JOB WHERE ACTIVE = 1", con);
             con.Open();
             
@@ -1176,7 +1236,7 @@ namespace BarcodeConversion
                 {
                     string jobAbb = (string)reader.GetValue(0);
                     selectJob.Items.Add(jobAbb);
-                    selectJob.AutoPostBack = true;
+                    //selectJob.AutoPostBack = true;
                 }
                 reader.Close();
             }
@@ -1190,7 +1250,7 @@ namespace BarcodeConversion
 
             // Get configured jobs, then Set color in dropdown list.
             con.Close();
-            setDropdownColor(con);
+            setDropdownColor();
         }
 
 
@@ -1266,8 +1326,9 @@ namespace BarcodeConversion
 
 
         // SET COLOR FOR DROPDOWN CONFIGURED JOB ITEMS. HELPER FUNCTION
-        private void setDropdownColor(SqlConnection con)
+        private void setDropdownColor()
         {
+            SqlConnection con = Helper.ConnectionObj;
             con.Open();
             SqlCommand cmd4 = new SqlCommand("SELECT ABBREVIATION " +
                                              "FROM JOB " +
@@ -1305,7 +1366,7 @@ namespace BarcodeConversion
             }
             else
             {
-                getUnassignedJobs();
+                getUnassignedJobs(null);
             }
         }
 

@@ -256,6 +256,15 @@ namespace BarcodeConversion {
         protected global::System.Web.UI.WebControls.Button assignedBtn;
         
         /// <summary>
+        /// inaccessibleBtn control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button inaccessibleBtn;
+        
+        /// <summary>
         /// unassignedBtn control.
         /// </summary>
         /// <remarks>

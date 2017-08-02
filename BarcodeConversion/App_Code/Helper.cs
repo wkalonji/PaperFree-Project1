@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Configuration;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Web;
 using System.Web.UI;
 
 namespace BarcodeConversion.App_Code
@@ -14,15 +11,19 @@ namespace BarcodeConversion.App_Code
         {
             get
             {
-                SqlConnection con = new SqlConnection(@"Data Source=GLORY-PC\SQLEXPRESS;Initial Catalog=ImagePRO;Integrated Security=True");
+                ConnectionStringSettings conString = ConfigurationManager.ConnectionStrings["myConnection"];
+                string connectionString = conString.ConnectionString;
+                SqlConnection con = new SqlConnection(connectionString);
                 return con;
             }
         }
 
 
         // GET USER ID VIA USERNAME. HELPER FUNCTION
-        public static int getUserId(string user, SqlConnection con)
+        public static int getUserId(string user)
         {
+            SqlConnection con = ConnectionObj;
+            con.Open();
             int opID = 0;
             SqlCommand cmd = new SqlCommand("SELECT ID FROM OPERATOR WHERE NAME = @username", con);
             cmd.Parameters.AddWithValue("@username", user);
@@ -34,10 +35,12 @@ namespace BarcodeConversion.App_Code
                     opID = (int)reader.GetValue(0);
                 }
                 reader.Close();
+                con.Close();
                 return opID;
             }
             else
             {
+                con.Close();
                 return opID;
             }
         }

@@ -11,7 +11,6 @@ namespace BarcodeConversion
 
     public partial class _Default : Page
     {
-        SqlConnection con = Helper.ConnectionObj;
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -22,8 +21,7 @@ namespace BarcodeConversion
                 // Get your assigned jobs
                 selectJob_Click(new object(), new EventArgs());
             }
-            con.Close();
-            setDropdownColor(con);
+            setDropdownColor();
         }
 
 
@@ -31,6 +29,7 @@ namespace BarcodeConversion
         // 'OnSelectedIndexChanged' CALLED: SET & DISPLAY CONTROLS OF SELECTED JOB. FUNCTION
         protected void onJobSelect(object sender, EventArgs e)
         {
+            SqlConnection con = Helper.ConnectionObj;
             generateIndexSection.Visible = false;
             con.Open();
 
@@ -55,7 +54,6 @@ namespace BarcodeConversion
             // Make sure a job is selected
             if(this.selectJob.SelectedValue != "Select")
             {
-
                 // First, get selected job ID.
                 int jobID = getJobId(this.selectJob.SelectedValue, con);
                 if(jobID == 0)
@@ -126,7 +124,7 @@ namespace BarcodeConversion
                 }
                 else
                 {   
-                    string msg = "The "+ selectJob.SelectedValue + " Job that you selected has not yet been configured. Please contact your system admin.";
+                    string msg = "The " + selectJob.SelectedValue+ " job that you selected has not yet been configured by your system admin. Only red colored jobs can be processed.";
                     ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
                     selectJob.SelectedValue = "Select";
                     con.Close();
@@ -143,7 +141,6 @@ namespace BarcodeConversion
             if (!Page.IsValid) return;
             indexSetPrintedMsg.Visible = false;
             // First, get list of all entries.
-            string allEntriesConcat = string.Empty;
             List<EntryContent> allEntriesList = new List<EntryContent>();
             allEntriesList = getEntries();
             ViewState["allEntriesList"] = allEntriesList;
@@ -155,14 +152,13 @@ namespace BarcodeConversion
             }
             else
             {
-                foreach(var entry in allEntriesList)
-                {
-                    allEntriesConcat += entry.text;
-                }
-                string today = DateTime.Now.ToString("yyMMddHHmmssfff");
+                string year = DateTime.Now.ToString("yy");
+                JulianCalendar jc = new JulianCalendar();
+                string julianDay = jc.GetDayOfYear(DateTime.Now).ToString();
+                string time = DateTime.Now.ToString("HHmmssfff");
 
                 // Making the Index string 
-                ViewState["allEntriesConcat"] = allEntriesConcat.ToUpper() + today;
+                ViewState["allEntriesConcat"] = selectJob.SelectedValue.ToUpper() + year + julianDay + time;
             }
             var showTextValue = chkShowText.Checked ? "1" : "0";
             string indexString = (string)ViewState["allEntriesConcat"];
@@ -186,11 +182,12 @@ namespace BarcodeConversion
         protected void saveIndex_Click(object sender, EventArgs e)
         {
             if (!Page.IsValid) return;
+            SqlConnection con = Helper.ConnectionObj;
             con.Open();
 
             // First, get current user id via name.
             string user = Environment.UserName;
-            int opID = Helper.getUserId(user, con);
+            int opID = Helper.getUserId(user);
             if (opID == 0)
             {
                 string msg = "Your name could not be found. Contact Tech Support";
@@ -297,7 +294,7 @@ namespace BarcodeConversion
             {
                 Response.Write(
                     "<tr>" +
-                        "<td style='font-size:25px; font-weight:500;'>" + entry.labelText + ":" + "</td>" +
+                        "<td style='font-size:25px; font-weight:500;'>" + entry.labelText + "</td>" +
                         "<td style='font-size:25px; font-weight:500; padding-left:15px;'>" + entry.text.ToUpper() + "</td>" +
                     "</tr>" 
                 );
@@ -321,6 +318,7 @@ namespace BarcodeConversion
         protected void setIndexAsPrinted_Click(object sender, EventArgs e)
         {
             if (!Page.IsValid) return;
+            SqlConnection con = Helper.ConnectionObj;
             var counter = 0;
             string indexString = (string)ViewState["allEntriesConcat"];
             con.Open();
@@ -374,6 +372,7 @@ namespace BarcodeConversion
         // GET YOUR ASSIGNED JOBS. HELPER FUNCTION
         protected void selectJob_Click(Object sender, EventArgs e)
         {
+            SqlConnection con = Helper.ConnectionObj;
             // First, get current user id via name.
             string user = Environment.UserName;
             int jobID = 0;
@@ -382,7 +381,7 @@ namespace BarcodeConversion
 
 
             con.Open();
-            int opID = Helper.getUserId(user, con);
+            int opID = Helper.getUserId(user);
             if (opID == 0)
             {
                 noJobsFound.Visible = true;
@@ -425,7 +424,6 @@ namespace BarcodeConversion
                             string jobAbb = (string)reader3.GetValue(0);
                             selectJob.Items.Add(jobAbb);
                             selectJob.AutoPostBack = true;
-
                         }
                         reader3.Close();
                     }
@@ -451,8 +449,9 @@ namespace BarcodeConversion
 
 
         // SET COLOR FOR DROPDOWN CONFIGURED JOB ITEMS. HELPER FUNCTION
-        private void setDropdownColor(SqlConnection con)
+        private void setDropdownColor()
         {
+            SqlConnection con = Helper.ConnectionObj;
             con.Open();
             SqlCommand cmd4 = new SqlCommand("SELECT ABBREVIATION " +
                                              "FROM JOB " +

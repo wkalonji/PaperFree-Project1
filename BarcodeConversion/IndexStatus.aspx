@@ -42,20 +42,25 @@
                     <td style="padding-bottom:15px;"><asp:Button ID="reset" runat="server" Text="Reset" onclick="reset_Click" /></td>
                 </tr>
                 <tr>
-                    <td><asp:Label ID="filterLabel" runat="server"><b>Filter:</b></asp:Label></td>
-                    <td > 
-                        <asp:DropDownList ID="whoFilter" OnSelectedIndexChanged="onSelectedChange" runat="server" AutoPostBack="true">
-                            <asp:ListItem Value="meOnly">Show Your Sheets Only</asp:ListItem>
-                            <asp:ListItem Value="everyone">Show Sheets for all Operators</asp:ListItem>
+                    <td><asp:Label ID="filterLabel" runat="server"><h4>Filter :</h4></asp:Label></td>
+                    <td style="padding-top:14px;"> 
+                        <asp:DropDownList ID="jobsFilter" OnSelectedIndexChanged="onSelectedChange" runat="server">
+                            <asp:ListItem Value="allJobs">All Jobs</asp:ListItem>
                         </asp:DropDownList>
                     </td>
-                     <td> 
+                    <td style="padding-top:14px;"> 
+                        <asp:DropDownList ID="whoFilter" OnSelectedIndexChanged="onSelectedChange" runat="server" AutoPostBack="true">
+                            <asp:ListItem Value="meOnly">Your Indexes Only</asp:ListItem>
+                            <asp:ListItem Value="everyone">Indexes for all Operators</asp:ListItem>
+                        </asp:DropDownList>
+                    </td>
+                     <td style="padding-top:14px;"> 
                         <asp:DropDownList ID="whenFilter" OnSelectedIndexChanged="onSelectWhen" runat="server" AutoPostBack="true">
                             <asp:ListItem Value="allTime">For All Time</asp:ListItem>
                             <asp:ListItem Value="pickRange">Select Date/Time Range</asp:ListItem>
                         </asp:DropDownList>
                     </td>
-                    <td> 
+                    <td style="padding-top:14px;"> 
                         <asp:DropDownList ID="whatFilter" OnSelectedIndexChanged="onSelectedChange" runat="server" AutoPostBack="true">
                             <asp:ListItem Value="allSheets">All Sheets</asp:ListItem>
                             <asp:ListItem Value="printed">Printed Only</asp:ListItem>
@@ -103,7 +108,7 @@
                             PageSize="10" HeaderStyle-CssClass="header" RowStyle-CssClass="rows" AllowPaging="true" OnPageIndexChanging="pageChange_Click"
                             OnRowDataBound="rowDataBound" OnSorting="gridView_Sorting" AllowSorting="True"> 
                     <columns>
-                        <asp:templatefield HeaderText ="N&#176;" ShowHeader="true">
+                        <asp:templatefield HeaderText ="N°" ShowHeader="true">
                             <ItemTemplate >
                                 <%# Container.DataItemIndex + 1 %>
                             </ItemTemplate>

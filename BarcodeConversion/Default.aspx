@@ -69,7 +69,7 @@
                     </td>
                 </tr>
             </table> 
-            <asp:Panel ID="noJobsFound" Visible="false" runat="server"><h3> No job is currently accessible.</h3> </asp:Panel>
+            <asp:Panel ID="noJobsFound" Visible="false" runat="server"><h3> No job is currently accessible to you.</h3> </asp:Panel>
         </asp:Panel>
         
         <asp:panel ID="indexCreationSection" Visible="false" runat="server" style="width:auto; margin:auto">           
@@ -120,7 +120,7 @@
                 <table class = table style="width:550px;" >
                     <tr>
                         <td><asp:Label ID="indexLabel" runat="server">Index generated:  </asp:Label></td>
-                        <td style="text-align:left;"><asp:Label ID="textToConvert" Font-Bold="true" Width=300 Font-size="20px" runat="server"></asp:Label></td>
+                        <td style="text-align:left;"><asp:Label ID="textToConvert" Font-Bold="true" Font-Italic="true" Width=300 Font-size="20px" runat="server"></asp:Label></td>
                     </tr>
                     <tr>
                         <td style="vertical-align:central; width:250px;"><asp:Label ID="barcodeLabel" runat="server">Corresponding Barcode:</asp:Label></td>
@@ -142,7 +142,7 @@
 
         <div style="margin-top:50px;"></div>
         <%--Link to Print Indexes page --%>     
-        <asp:HyperLink ID="HyperLink1" runat="server" NavigateUrl="~/Indexes"><span style="font-size:medium;">View all of your unprinted indexes</span></asp:HyperLink>
+        <asp:HyperLink ID="HyperLink1" Font-Underline="true" runat="server" NavigateUrl="~/Indexes"><span style="font-size:medium;">View all of your unprinted indexes</span></asp:HyperLink>
         <input id="indexString" type="hidden"  runat="server"  value=""/>
     </asp:Panel>
 

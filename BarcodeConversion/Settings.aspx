@@ -41,14 +41,14 @@
                 <%-- JOB SECTION BODY --%>
                 <div style="display:block; width: 26%;" class="auto-style5">
                     <asp:Panel ID="jobSection" Visible="false" runat="server" Width="408px" > 
-                        <asp:Label runat="server"><h4 style="margin-top:25px;">Create/Delete Jobs</h4></asp:Label>
-                        <asp:Label runat="server">
-                            <h6>Note: You can assign a new job to an operator right away.<br />
-                                If operator entered doesn't exist, a new job is created anyway.<br />
-                                A job assigned here can't be processed by the operator until<br />
-                                configured.
-                            </h6>
-                        </asp:Label>
+                        <table style="margin-top:25px;background-color:aliceblue;width:76%;">
+                            <tr>
+                                <td><asp:Label runat="server">
+                                    <h4 >&nbsp;Create/Edit Jobs</h4></asp:Label></td>
+                                <td style="text-align:right;padding-right:5px;"><asp:Button Text="?" Height="23" 
+                                    OnClientClick="return alert('Notes:\n*   You can make a new job accessible to an operator right away. If operator entered does not exist, a new job is created anyway.\n*    Operators accessing jobs here will see them, but cannot generate Indexes until those jobs are configured in the Index Config section below.\n*   While editing a job, red colored dropdown jobs are Active jobs.')" runat="server"></asp:Button></td>
+                            </tr>
+                        </table>
                         <table  style="margin-top:25px; width: 76%; margin-right: 36px; height: 149px;"  class=auto-style3 > 
                             <tr>
                                 <td style="padding-bottom:15px;"><asp:Label Text="Choose your Action: " runat="server"></asp:Label></td>
@@ -56,7 +56,7 @@
                                     <asp:DropDownList ID="selectAction" AutoPostBack="True" runat="server" OnSelectedIndexChanged="actionChange">
                                         <asp:ListItem Selected="true" Value="create">Create New Job</asp:ListItem>
                                         <asp:ListItem Value="edit">Edit Existing Job</asp:ListItem>
-                                        <asp:ListItem Value="delete">Delete Existing Job</asp:ListItem>
+                                        <%--<asp:ListItem Value="delete">Delete Existing Job</asp:ListItem>--%>
                                     </asp:DropDownList>
                                 </td>
                             </tr>
@@ -64,7 +64,7 @@
                                 <td class="auto-style2" style="height: 35px; width: 286px;"><asp:Label runat="server">Job Abbreviation: </asp:Label></td>
                                 <td style="height: 35px">
                                     <asp:TextBox ID="jobAbb" placeholder=" Required" runat="server"></asp:TextBox>
-                                    <asp:DropDownList ID="selectJobList" OnSelectedIndexChanged="onJobAbbSelect" runat="server">
+                                    <asp:DropDownList ID="selectJobList" runat="server">
                                         <asp:ListItem Value="Select">Select</asp:ListItem>
                                     </asp:DropDownList>
                                 </td>
@@ -83,7 +83,7 @@
                                 </td>
                             </tr>
                              <tr>
-                                <td class="auto-style2" style="padding-top:25px; width: 286px;"><asp:Label ID="jobAssignedToLabel" runat="server">Assign To: </asp:Label></td>
+                                <td class="auto-style2" style="padding-top:25px; width: 286px;"><asp:Label ID="jobAssignedToLabel" runat="server">Accessible To: </asp:Label></td>
                                 <td><asp:TextBox ID="jobAssignedTo" style="margin-top:15px;" placeholder=" Optional" runat="server"></asp:TextBox></td>
                             </tr>
                 
@@ -92,9 +92,7 @@
                             <tr style="height:15px;">
                                <td style="height: 15px; text-align:right;">
                                     <asp:Button ID="deleteJobBtn" Visible="false" runat="server" Text="Delete " 
-                                        OnClientClick="return confirm('ATTENTION Deleting this job will also delete its configuration. 
-                                        Unprinted indexes related to this job will lose some info in the Details section of the printouts.
-                                        We advise to Deactivate job instead. Do you still want to procede with Delete?');" OnClick="deleteJob_Click"/> </td>
+                                        OnClientClick="return confirm('ATTENTION!\n\nDeleting this job will also delete its configuration, all indexes associated to it, and any other related records in other entities. Unless it is a must, we advise to Deactivate job instead.\n\nDo you still want to procede with Delete?');" OnClick="deleteJob_Click"/> </td>
                             </tr>
                             <tr>
                                  <td style="height: 15px; text-align:right;">
@@ -117,15 +115,14 @@
                 <%--USER & PERMISSION SECTION BODY--%>
                 <div style="display:inline-block; width: 26%;" class="auto-style5">
                     <asp:Panel ID="newUserSection" Visible="false" runat="server" Width="322px" Height="250px" style="margin-top: 0px" >
-                        <asp:Label runat="server"><h4 style="margin-top:25px;">Add Users & Set/Remove Admin Privileges</h4></asp:Label>
-                        <asp:Label runat="server">
-                            <h6>Note: Anyone visiting the site for the 1st time is automatically
-                                added as user. A user account can still be created prior to user
-                                visiting the site. <br />
-                                To create, just type in operator's username, set permissions & submit.
-                                You can also change existing user's permissions.
-                            </h6>
-                        </asp:Label>
+                        <table style="margin-top:25px;background-color:aliceblue;width:99%;">
+                            <tr>
+                                <td><asp:Label runat="server">
+                                    <h4 >&nbsp;Add Operators & Admins</h4></asp:Label></td>
+                                <td style="text-align:right;padding-right:5px;"><asp:Button Text="?" Height="23" 
+                                    OnClientClick="return alert('Notes:\n*  Anyone accessing the site for the 1st time is automatically added as operator.\nAn operator can still be added prior to him/her accessing the site.\nTo add, just type in operator\'s username, set Permissions & submit.\n*    You can also change existing operator\'s permissions.')" runat="server"></asp:Button></td>
+                            </tr>
+                        </table>
                         <table  style="margin-top:25px; height: 72px;"  class=auto-style3 >
                             <tr>
                                 <td class="auto-style2" style="height: 31px; margin-left: 200px;"><asp:Label runat="server">Operator: </asp:Label></td>
@@ -135,7 +132,7 @@
                             <tr>
                                 <td class="auto-style2"><asp:Label runat="server">Permissions: </asp:Label></td>
                                 <td>
-                                    <asp:DropDownList ID="permissions" AutoPostBack="True" runat="server">
+                                    <asp:DropDownList ID="permissions" runat="server">
                                         <asp:ListItem Selected="true" Value="0">Operator</asp:ListItem>
                                         <asp:ListItem Value="1">Admin</asp:ListItem>
                                     </asp:DropDownList>
@@ -172,12 +169,14 @@
             <td style="width: 615px; vertical-align:top;">
                 <%--JOB ACCESS SECTION BODY --%>
                 <asp:Panel ID="assignPanel" Visible="false" runat="server">
-                    <asp:Label runat="server"><h4>Assign Jobs to Operators</h4></asp:Label>
-                    <asp:Label runat="server">
-                        <h6>Note: Jobs assigned here can't be processed by the operator <br />
-                            until configured.
-                        </h6>
-                    </asp:Label>
+                    <table style="margin-top:25px;background-color:aliceblue;width:51.5%;">
+                        <tr>
+                            <td><asp:Label runat="server">
+                                <h4 >&nbsp;Assign Jobs to Operators</h4></asp:Label></td>
+                            <td style="text-align:right;padding-right:5px;"><asp:Button Text="?" Height="23" 
+                                OnClientClick="return alert('Notes:\n*  Operators accessing jobs here will see them, but cannot generate indexes until those jobs are configured in the Index Config section below.')" runat="server"></asp:Button></td>
+                        </tr>
+                     </table>
                     <table  style="margin-top:10px; height: 72px; width: 51.5%;"  class=auto-style3 >
                         <tr>
                             <td class="auto-style2" style="height: 31px"><asp:Label runat="server">Operator: </asp:Label></td>
@@ -185,9 +184,10 @@
                         </tr> 
                     </table>
                     <table style="margin-top:20px; margin-bottom:20px; width: 316px;">
-                        <tr style="height:15px;">
-                            <td style="height: 10px; text-align:left;"><asp:Button ID="assignedBtn"  Visible="true" runat="server" Text="Assigned" OnClick="assignedJob_Click" /></td>
-                            <td style="height: 10px; text-align:right;"><asp:Button ID="unassignedBtn" style="margin-left:25px;" Visible="true" runat="server" Text="Unassigned " OnClick="unassignedJob_Click" Width="118px" /></td>
+                        <tr style="background-color:aliceblue; height:40px;">
+                            <td style="height: 10px; text-align:left;"><asp:Button ID="assignedBtn"  Visible="true" runat="server" Text="Accessible" OnClick="assignedJob_Click" /></td>
+                            <td style="height: 10px; text-align:center;padding-left:8px;"><asp:Button ID="inaccessibleBtn"  Visible="true" runat="server" Text="Inaccessible" OnClick="unassignedJob_Click" /></td>
+                            <td style="height: 10px; text-align:right;"><asp:Button ID="unassignedBtn" Visible="true" runat="server" Text="Unassigned " OnClick="unassignedJob_Click"/></td>
                         </tr> 
                     </table>
                     <div> 
@@ -215,8 +215,8 @@
                     <div style="display:block; width: 535px;" >
                         <table class = table style="margin-top:25px; width: 320px;">
                             <tr>
-                                <td style="text-align:left"><asp:Button ID="deleteAssignedBtn" Visible="true" runat="server" Text="Unassign" OnClick="deleteAssigned_Click"/></td>
-                                <td style="text-align:right;width: 100%;"><asp:Button ID="jobAccessBtn" Visible="true" runat="server" Text="Assign" OnClick="jobAccess_Click" Width="59px"/></td>                 
+                                <td style="text-align:left"><asp:Button ID="deleteAssignedBtn" Visible="true" runat="server" Text="Deny" OnClick="deleteAssigned_Click"/></td>
+                                <td style="text-align:right;width: 100%;"><asp:Button ID="jobAccessBtn" Visible="true" runat="server" Text="Grant" OnClick="jobAccess_Click" Width="59px"/></td>                 
                             </tr>                  
                         </table>
                     </div>   
@@ -226,19 +226,20 @@
             <td style="width: 324px; vertical-align:top;">
                 <%--JOB INDEX CONFIG BODY --%>
                 <asp:Panel ID="jobIndexEditingPanel" Visible="false" runat="server">
-                    <asp:Label runat="server"><h4>Set Index Form Controls & Rules</h4></asp:Label>
-                    <asp:Label runat="server">
-                        <h6>
-                            Note: Only jobs configured here can be processed by the operator.<br />
-                            Red colored dropdown items are jobs already configured.
-                        </h6>
-                    </asp:Label>
+                    <table style="margin-top:25px;background-color:aliceblue;width:99%;">
+                        <tr>
+                            <td><asp:Label runat="server">
+                                <h4 >&nbsp;Create Form Controls for Jobs</h4></asp:Label></td>
+                            <td style="text-align:right;padding-right:5px;"><asp:Button Text="?" Height="23" 
+                                OnClientClick="return alert('Notes:\n*  Only jobs configured here can be processed by operators.\n*  Red colored dropdown jobs are jobs that are already configured.')" runat="server"></asp:Button></td>
+                        </tr>
+                    </table>
                     <table class = table style="width:320px;">
                         <tr> <th colspan="2">Please Select a Job below </th></tr>
                         <tr>
                             <td style="width: 160px"><asp:Label ID="selectJobLabel" runat="server">Job Abbreviation:</asp:Label></td>
                             <td style="text-align:left;"> 
-                                <asp:DropDownList ID="selectJob" OnSelectedIndexChanged="onJobSelect" runat="server">
+                                <asp:DropDownList ID="selectJob" runat="server">
                                     <asp:ListItem Value="Select">Select</asp:ListItem>
                                 </asp:DropDownList>
                             </td>
@@ -287,18 +288,14 @@
                         </tr>
                     </table>
                     <table style="margin-top:20px; margin-bottom:20px; width: 316px;">
-                        <tr style="height:15px;">
+                        <tr style="background-color:aliceblue; height:40px;">
                             <td style="height: 10px; text-align:left;">
                                 <asp:Button ID="unsetRules" Visible="true" runat="server" Text="Unset"
-                                    OnClientClick="return confirm('ATTENTION Removing or changing configuration will affect
-                                    the Details section in the printouts of still unprinted indexes related to this job. We strongly advise to make sure that there are no more unprinted indexes
-                                    related to this job accross all operators. Then reconfigure the job before new indexes related to it can be created.
-                                     Do you still want to procede with Reconfiguration?');"
+                                    OnClientClick="return confirm('ATTENTION!\n\nRemoving or changing configuration will affect the Details section of printouts of still unprinted indexes related to this job. We suggest that you make sure that there are no more unprinted indexes related to this job accross all operators. Then reconfigure the job before any new indexes related to it can be created.\nDo you still want to procede with reconfiguration?');"
                                     OnClick="unsetRules_Click" /></td>
                             <td style="height: 10px; text-align:right;"><asp:Button ID="setRules" style="margin-left:25px;" Visible="true" runat="server" Text="Set " OnClick="setRules_Click" /></td>
                         </tr> 
-                    </table>
-        
+                    </table>     
                 </asp:Panel>
             </td>
         </tr>
