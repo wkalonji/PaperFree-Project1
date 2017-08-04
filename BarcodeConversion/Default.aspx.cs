@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -18,545 +18,643 @@ namespace BarcodeConversion
             {
                 label1Box.Focus();
 
-                // Get your assigned jobs
+                // Get your accessible jobs
                 selectJob_Click(new object(), new EventArgs());
             }
             setDropdownColor();
         }
 
 
-
-        // 'OnSelectedIndexChanged' CALLED: SET & DISPLAY CONTROLS OF SELECTED JOB. FUNCTION
+        // 'JOB ABBREVIATION' DROPDOWN CLICKED: SET & DISPLAY CONTROLS OF SELECTED JOB. 
         protected void onJobSelect(object sender, EventArgs e)
         {
-            SqlConnection con = Helper.ConnectionObj;
-            generateIndexSection.Visible = false;
-            con.Open();
-
-            // Set stage
-            indexCreationSection.Visible = false;
-            LABEL1.Visible = false;
-            label1Box.Visible = false;
-            label1Box.Text = string.Empty;
-            LABEL2.Visible = false;
-            label2Box.Visible = false;
-            label2Box.Text = string.Empty;
-            LABEL3.Visible = false;
-            label3Box.Visible = false;
-            label3Box.Text = string.Empty;
-            LABEL4.Visible = false;
-            label4Box.Visible = false;
-            label4Box.Text = string.Empty;
-            LABEL5.Visible = false;
-            label5Box.Visible = false;
-            label5Box.Text = string.Empty;
-            
-            // Make sure a job is selected
-            if(this.selectJob.SelectedValue != "Select")
+            try
             {
-                // First, get selected job ID.
-                int jobID = getJobId(this.selectJob.SelectedValue, con);
-                if(jobID == 0)
-                {
-                    string msg = "Error: Issues occured while retrieving job info. Please try again";
-                    ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
-                    selectJob.SelectedValue = "Select";
-                    con.Close();
-                    return;
-                }
-                
-                // Then, check whether that job is configured, if so, display controls.
-                SqlCommand cmd2 = new SqlCommand("SELECT JOB_ID, LABEL1, REGEX1, LABEL2, REGEX2, LABEL3, REGEX3," +
-                    "LABEL4, REGEX4, LABEL5, REGEX5 FROM JOB_CONFIG_INDEX WHERE JOB_ID = @jobID", con);
-                cmd2.Parameters.AddWithValue("@jobID", jobID);
-                SqlDataReader reader2 = cmd2.ExecuteReader();
-                if (reader2.HasRows)
-                {
-                    indexCreationSection.Visible = true;
+                // Set stage
+                generateIndexSection.Visible = false;
+                indexCreationSection.Visible = false;
+                LABEL1.Visible = false;
+                label1Box.Visible = false;
+                label1Box.Text = string.Empty;
+                LABEL2.Visible = false;
+                label2Box.Visible = false;
+                label2Box.Text = string.Empty;
+                LABEL3.Visible = false;
+                label3Box.Visible = false;
+                label3Box.Text = string.Empty;
+                LABEL4.Visible = false;
+                label4Box.Visible = false;
+                label4Box.Text = string.Empty;
+                LABEL5.Visible = false;
+                label5Box.Visible = false;
+                label5Box.Text = string.Empty;
 
-                    // Set & display controls
-                    while (reader2.Read())
+                // Make sure a job is selected
+                if (this.selectJob.SelectedValue != "Select")
+                {
+                    // First, get selected job ID.
+                    int jobID = getJobId(this.selectJob.SelectedValue);
+
+                    if (jobID == 0)
                     {
-                        string text1 = (string)reader2.GetValue(1);
-                        if (text1 != string.Empty)
+                        string msg = "Error-02: Selected job not found. Contact system admin.";
+                        ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                        selectJob.SelectedValue = "Select";
+                        return;
+                    }
+
+                    // Then, check whether that job is configured, if so, display controls.
+                    using (SqlConnection con = Helper.ConnectionObj)
+                    {
+                        using (SqlCommand cmd = con.CreateCommand())
                         {
-                            text1 = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(text1.ToLower());
-                            LABEL1.Text = text1 + " :";
-                            LABEL1.Visible = true;
-                            label1Box.Visible = true;
-                            label1Box.Focus();
-                        }
-                        if(reader2.GetValue(3) != DBNull.Value)
-                        {
-                            string text2 = (string)reader2.GetValue(3);
-                            text2 = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(text2.ToLower());
-                            LABEL2.Text = text2 + " :";
-                            LABEL2.Visible = true;
-                            label2Box.Visible = true;
-                        }
-                        if(reader2.GetValue(5) != DBNull.Value)
-                        {
-                            string text3 = (string)reader2.GetValue(5);
-                            text3 = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(text3.ToLower());
-                            LABEL3.Text = text3 + " :";
-                            LABEL3.Visible = true;
-                            label3Box.Visible = true;
-                        }
-                        if(reader2.GetValue(7) != DBNull.Value)
-                        {
-                            string text4 = (string)reader2.GetValue(7);
-                            text4 = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(text4.ToLower());
-                            LABEL4.Text = text4 + " :";
-                            LABEL4.Visible = true;
-                            label4Box.Visible = true;
-                        }
-                        if(reader2.GetValue(9) != DBNull.Value)
-                        {
-                            string text5 = (string)reader2.GetValue(9);
-                            text5 = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(text5.ToLower());
-                            LABEL5.Text = text5 + " :";
-                            LABEL5.Visible = true;
-                            label5Box.Visible = true;
+                            cmd.CommandText = "SELECT JOB_ID, LABEL1, REGEX1, LABEL2, REGEX2, LABEL3, REGEX3," +
+                                              "LABEL4, REGEX4, LABEL5, REGEX5 FROM JOB_CONFIG_INDEX WHERE JOB_ID = @jobID";
+                            cmd.Parameters.AddWithValue("@jobID", jobID);
+
+                            con.Open();
+                            using (SqlDataReader reader = cmd.ExecuteReader())
+                            {
+                                if (reader.HasRows)
+                                {
+                                    indexCreationSection.Visible = true;
+
+                                    // Set & display controls
+                                    while (reader.Read())
+                                    {
+                                        string text1 = (string)reader.GetValue(1);
+                                        if (text1 != string.Empty)
+                                        {
+                                            text1 = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(text1.ToLower());
+                                            LABEL1.Text = text1 + " :";
+                                            LABEL1.Visible = true;
+                                            label1Box.Visible = true;
+                                            label1Box.Focus();
+                                        }
+                                        if (reader.GetValue(3) != DBNull.Value)
+                                        {
+                                            string text2 = (string)reader.GetValue(3);
+                                            text2 = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(text2.ToLower());
+                                            LABEL2.Text = text2 + " :";
+                                            LABEL2.Visible = true;
+                                            label2Box.Visible = true;
+                                        }
+                                        if (reader.GetValue(5) != DBNull.Value)
+                                        {
+                                            string text3 = (string)reader.GetValue(5);
+                                            text3 = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(text3.ToLower());
+                                            LABEL3.Text = text3 + " :";
+                                            LABEL3.Visible = true;
+                                            label3Box.Visible = true;
+                                        }
+                                        if (reader.GetValue(7) != DBNull.Value)
+                                        {
+                                            string text4 = (string)reader.GetValue(7);
+                                            text4 = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(text4.ToLower());
+                                            LABEL4.Text = text4 + " :";
+                                            LABEL4.Visible = true;
+                                            label4Box.Visible = true;
+                                        }
+                                        if (reader.GetValue(9) != DBNull.Value)
+                                        {
+                                            string text5 = (string)reader.GetValue(9);
+                                            text5 = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(text5.ToLower());
+                                            LABEL5.Text = text5 + " :";
+                                            LABEL5.Visible = true;
+                                            label5Box.Visible = true;
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    string msg = "The " + selectJob.SelectedValue + " job that you selected has not yet been configured by your system admin. Only red colored jobs can be processed.";
+                                    ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                                    selectJob.SelectedValue = "Select";
+                                    return;
+                                }
+                            }
                         }
                     }
-                    reader2.Close();
-                    con.Close();
-                }
-                else
-                {   
-                    string msg = "The " + selectJob.SelectedValue+ " job that you selected has not yet been configured by your system admin. Only red colored jobs can be processed.";
-                    ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
-                    selectJob.SelectedValue = "Select";
-                    con.Close();
-                    return;
                 }
             }
-            con.Close();
-        }
+            catch (Exception ex)
+            {
+                throw new Exception("Error-03: Issue occured while attempting to retrieve selected job's form controls. Contact system admin." +
+                                    System.Environment.NewLine + ex.Message);
+            }
+        }      
 
 
-        // 'GENERATE INDEX' CLICKED: GENERATE INDEX AND BARCODE FROM FORM DATA. FUNCTION
+        // 'GENERATE INDEX' CLICKED: GENERATE INDEX AND BARCODE FROM FORM DATA.
         protected void btnGenerateBarcode_Click(object sender, EventArgs e)
         {
-            if (!Page.IsValid) return;
-            indexSetPrintedMsg.Visible = false;
-            // First, get list of all entries.
-            List<EntryContent> allEntriesList = new List<EntryContent>();
-            allEntriesList = getEntries();
-            ViewState["allEntriesList"] = allEntriesList;
-            if(allEntriesList.Count == 0)
+            try
             {
-                string msg = "All fields are required!";
-                ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
-                return;
-            }
-            else
-            {
-                string year = DateTime.Now.ToString("yy");
-                JulianCalendar jc = new JulianCalendar();
-                string julianDay = jc.GetDayOfYear(DateTime.Now).ToString();
-                string time = DateTime.Now.ToString("HHmmssfff");
+                if (!Page.IsValid) return;
 
-                // Making the Index string 
-                ViewState["allEntriesConcat"] = selectJob.SelectedValue.ToUpper() + year + julianDay + time;
+                // First, get list of all entries.
+                indexSetPrintedMsg.Visible = false;
+                List<EntryContent> allEntriesList = new List<EntryContent>();
+                allEntriesList = getEntries();
+                ViewState["allEntriesList"] = allEntriesList;
+
+                // If Index form not filled
+                if (allEntriesList.Count == 0)
+                {
+                    string msg = "All fields are required!";
+                    ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                    return;
+                }
+                else
+                {
+                    string year = DateTime.Now.ToString("yy");
+                    JulianCalendar jc = new JulianCalendar();
+                    string julianDay = jc.GetDayOfYear(DateTime.Now).ToString();
+                    string time = DateTime.Now.ToString("HHmmssfff");
+
+                    // Making the Index string 
+                    ViewState["allEntriesConcat"] = selectJob.SelectedValue.ToUpper() + year + julianDay + time;
+                }
+                var showTextValue = chkShowText.Checked ? "1" : "0";
+                string indexString = (string)ViewState["allEntriesConcat"];
+                textToConvert.Text = indexString.ToUpper();
+                indexSavedMsg.Visible = false;
+                generateIndexSection.Visible = true;
+
+                // Convert index to barcode
+                imgBarcode.ImageUrl = string.Format("ShowCode39Barcode.ashx?code={0}&ShowText={1}&Thickness={2}",
+                                                    indexString,
+                                                    showTextValue, 1);
             }
-            var showTextValue = chkShowText.Checked ? "1" : "0";
-            string indexString = (string)ViewState["allEntriesConcat"];
-            textToConvert.Text = indexString.ToUpper();
-            indexSavedMsg.Visible = false;
-            generateIndexSection.Visible = true;
-            
-            // Convert index to barcode
-            imgBarcode.ImageUrl = string.Format("ShowCode39Barcode.ashx?code={0}&ShowText={1}&Thickness={2}",
-                                                indexString,
-                                                showTextValue,1);
-            /* imgBarcode.ImageUrl = string.Format("ShowCode39Barcode.ashx?code={0}&ShowText={1}&Thickness={2}",
-                                                 textBarcodeText,
-                                                 showTextValue,
-                                                 ddlBarcodeThickness.SelectedValue); */
+            catch (Exception ex)
+            {
+                throw new Exception("Error-04: Issue occured while attempting to generate Index. Contact system admin." + 
+                                    System.Environment.NewLine + ex.Message);
+            }
         }
 
 
 
-        // 'SAVE INDEX' CLICKED: SAVING INDEX INTO DB. FUNCTION
+        // 'SAVE INDEX' CLICKED: SAVING INDEX INTO DB.
         protected void saveIndex_Click(object sender, EventArgs e)
         {
             if (!Page.IsValid) return;
-            SqlConnection con = Helper.ConnectionObj;
-            con.Open();
 
-            // First, get current user id via name.
-            string user = Environment.UserName;
-            int opID = Helper.getUserId(user);
-            if (opID == 0)
-            {
-                string msg = "Your name could not be found. Contact Tech Support";
-                ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
-                con.Close();
-                return;
-            }
-
-            // Second, get selected job id
-            int jobID = getJobId(this.selectJob.SelectedValue, con);
-            if(jobID == 0)
-            {
-                string msg = "Error: Issues occured while retrieving job info. Please try again";
-                ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
-                selectJob.SelectedValue = "Select";
-                con.Close();
-                return;
-            }
-
-            // Now save the record into INDEX_DATA table
-            SqlCommand cmd = new SqlCommand("INSERT INTO INDEX_DATA (JOB_ID, BARCODE, VALUE1, VALUE2, " +
-                "VALUE3, VALUE4, VALUE5, OPERATOR_ID, CREATION_TIME, PRINTED) VALUES(@jobId, @barcodeIndex," +
-                " @val1, @val2, @val3, @val4, @val5, @opId, @time, @printed)", con);
-
-            cmd.Parameters.AddWithValue("@jobId", jobID);
-            cmd.Parameters.AddWithValue("@barcodeIndex", ViewState["allEntriesConcat"]);
-            if (label1Box.Visible == true) { cmd.Parameters.AddWithValue("@val1", label1Box.Text); }
-            else { cmd.Parameters.AddWithValue("@val1", DBNull.Value);}
-            if (label2Box.Visible == true) { cmd.Parameters.AddWithValue("@val2", label2Box.Text); }
-            else { cmd.Parameters.AddWithValue("@val2", DBNull.Value); }
-            if (label3Box.Visible == true) { cmd.Parameters.AddWithValue("@val3", label3Box.Text); }
-            else { cmd.Parameters.AddWithValue("@val3", DBNull.Value); }
-            if (label4Box.Visible == true) { cmd.Parameters.AddWithValue("@val4", label4Box.Text); }
-            else { cmd.Parameters.AddWithValue("@val4", DBNull.Value); }
-            if (label5Box.Visible == true) { cmd.Parameters.AddWithValue("@val5", label5Box.Text); }
-            else { cmd.Parameters.AddWithValue("@val5", DBNull.Value); }
-            cmd.Parameters.AddWithValue("@opId", opID);
-            cmd.Parameters.AddWithValue("@time", DateTime.Now);
-            cmd.Parameters.AddWithValue("@printed", 0);
             try
             {
-                if (cmd.ExecuteNonQuery() == 1)
+                // First, get current user id via name.
+                string user = Environment.UserName;
+                int opID = Helper.getUserId(user);
+                if (opID == 0)
                 {
-                    indexSavedMsg.Visible = true;
-                    ClientScript.RegisterStartupScript(this.GetType(), "fadeoutOperation", "FadeOut();", true);
-                    clearFields();
-                    generateIndexSection.Visible = false;
+                    string msg = "Error-05: Couldn't identify this computer. Contact system admin.";
+                    ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                    return;
+                }
+
+                // Then, get selected job id
+                int jobID = getJobId(this.selectJob.SelectedValue);
+                if (jobID == 0)
+                {
+                    string msg = "Error-06: Couldn't identify the selected job. Contact system admin.";
+                    ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                    selectJob.SelectedValue = "Select";
+                    return;
+                }
+
+                // Saving
+                using (SqlConnection con = Helper.ConnectionObj)
+                {
+                    using (SqlCommand cmd = con.CreateCommand())
+                    {
+                        cmd.CommandText = "INSERT INTO INDEX_DATA (JOB_ID, BARCODE, VALUE1, VALUE2, " +
+                                            "VALUE3, VALUE4, VALUE5, OPERATOR_ID, CREATION_TIME, PRINTED) VALUES(@jobId, @barcodeIndex," +
+                                            " @val1, @val2, @val3, @val4, @val5, @opId, @time, @printed)";
+                        cmd.Parameters.AddWithValue("@jobID", jobID);
+                        cmd.Parameters.AddWithValue("@barcodeIndex", ViewState["allEntriesConcat"]);
+                        if (label1Box.Visible == true) { cmd.Parameters.AddWithValue("@val1", label1Box.Text); }
+                        else { cmd.Parameters.AddWithValue("@val1", DBNull.Value); }
+                        if (label2Box.Visible == true) { cmd.Parameters.AddWithValue("@val2", label2Box.Text); }
+                        else { cmd.Parameters.AddWithValue("@val2", DBNull.Value); }
+                        if (label3Box.Visible == true) { cmd.Parameters.AddWithValue("@val3", label3Box.Text); }
+                        else { cmd.Parameters.AddWithValue("@val3", DBNull.Value); }
+                        if (label4Box.Visible == true) { cmd.Parameters.AddWithValue("@val4", label4Box.Text); }
+                        else { cmd.Parameters.AddWithValue("@val4", DBNull.Value); }
+                        if (label5Box.Visible == true) { cmd.Parameters.AddWithValue("@val5", label5Box.Text); }
+                        else { cmd.Parameters.AddWithValue("@val5", DBNull.Value); }
+                        cmd.Parameters.AddWithValue("@opId", opID);
+                        cmd.Parameters.AddWithValue("@time", DateTime.Now);
+                        cmd.Parameters.AddWithValue("@printed", 0);
+                        con.Open();
+                        if (cmd.ExecuteNonQuery() == 1)
+                        {
+                            indexSavedMsg.Visible = true;
+                            ClientScript.RegisterStartupScript(this.GetType(), "fadeoutOperation", "FadeOut();", true);
+                            clearFields();
+                            generateIndexSection.Visible = false;
+                        }
+                        else
+                        {
+                            string msg = "Error-07: Issue occured while attempting to save. Contact system admin.";
+                            ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("Violation of UNIQUE KEY"))
+                {
+                    throw new Exception("Error-08: The Index you are trying to save already exists! Click 'Generate Index' button to generate a new index.");
                 }
                 else
                 {
-                    string msg = "Index string NOT saved. Try again or contact Tech support.";
-                    ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
-                }
-                con.Close();
-            }
-            catch (Exception ex)
-            {   
-                if(ex.Message.Contains("Violation of UNIQUE KEY"))
-                {
-                    string msg = "The Index you are trying to save already exists! Click 'Generate Index' button to generate a new index.";
-                    ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                    throw new Exception("Error-09: Issue occured while attempting to save index. Contact system admin." +
+                                        System.Environment.NewLine + ex.Message);
                 }
             }
-            
         }
 
 
-
-        // 'SAVE & PRINT' CLICKED: SAVE THEN PRINT INDEX. FUNCTION
+        // 'SAVE & PRINT' CLICKED: SAVE THEN PRINT INDEX. 
         protected void saveAndPrint_Click(object sender, EventArgs e)
         {   
-            // First, save index
-            saveIndex_Click(new object(), new EventArgs());
-            
-            // Clear page
-            formPanel.Visible = false;
-            indexSavedMsg.Visible = false;
-
-            // Write Index sheet page content
-            string indexString = (string)ViewState["allEntriesConcat"];
-            imgBarcode.ImageUrl = string.Format("ShowCode39BarCode.ashx?code={0}&ShowText=1&Height=50", indexString.PadLeft(8, '0'));
-           
-            Response.Write(
-                "<div id = 'pageToPrint' style='margin-top:-50px;'>" +
-                    "<div>" +
-                        "<div style='font-size:25px; font-weight:500;'>" +
-                            "<img src='" + imgBarcode.ImageUrl + "' height='160px' width='500px' style='margin-top:0px; '> " +
-                        "</div>" +
-                        "<div style='font-size:25px; font-weight:500; text-align:right;' >" +
-                            "<img src='" + imgBarcode.ImageUrl + "' height='160px' width='500px' style='margin-top:250px; margin-right:-180px;' class='rotate'> " +
-                        "</div>" +
-                    "</div>" +
-
-                    "<table style='margin-top:250px; margin-bottom:580px; margin-left:40px;'>" +
-                        "<tr>" +
-                            "<td style='font-size:25px; font-weight:500;'> Index String: </td>" +
-                            "<td style='font-size:25px; font-weight:500; padding-left:15px;'>" + indexString.ToUpper() + "</td>" +
-                        "</tr>"
-             );
-            List<EntryContent> allEntriesList = new List<EntryContent>();
-            allEntriesList = (List<EntryContent>)ViewState["allEntriesList"];
-
-            foreach (var entry in allEntriesList)
+            try
             {
-                Response.Write(
-                    "<tr>" +
-                        "<td style='font-size:25px; font-weight:500;'>" + entry.labelText + "</td>" +
-                        "<td style='font-size:25px; font-weight:500; padding-left:15px;'>" + entry.text.ToUpper() + "</td>" +
-                    "</tr>" 
-                );
-            }
-            Response.Write(
-                        "<tr>" +
-                            "<td style='font-size:25px; font-weight:500;'>Date Created: </td>" +
-                            "<td style='font-size:25px; font-weight:500; padding-left:15px;'>" + DateTime.Now + "</td>" +
-                        "</tr>" +
-                    "</table >" +
-                "</div>"
-            );
+                // First, save index
+                saveIndex_Click(new object(), new EventArgs());
 
-            // Finally, Print Index sheet.
-            ClientScript.RegisterStartupScript(this.GetType(), "PrintOperation", "printing();", true);           
-        }
-
-
-
-        // SET INDEX AS PRINTED IN DB. HELPER FUNCTION
-        protected void setIndexAsPrinted_Click(object sender, EventArgs e)
-        {
-            if (!Page.IsValid) return;
-            SqlConnection con = Helper.ConnectionObj;
-            var counter = 0;
-            string indexString = (string)ViewState["allEntriesConcat"];
-            con.Open();
-            SqlCommand cmd = new SqlCommand("UPDATE INDEX_DATA SET PRINTED = @printed WHERE BARCODE = @barcodeIndex", con);
-            cmd.Parameters.AddWithValue("@printed", 1);
-            cmd.Parameters.AddWithValue("@barcodeIndex", indexString);
-            int some = cmd.ExecuteNonQuery();
-            if (cmd.ExecuteNonQuery() == 1)
-            {
-                counter++;
-                indexSetPrintedMsg.Visible = true;
+                // Clear page
+                formPanel.Visible = false;
                 indexSavedMsg.Visible = false;
+
+                // Write Index sheet page content
+                string indexString = (string)ViewState["allEntriesConcat"];
+                imgBarcode.ImageUrl = string.Format("ShowCode39BarCode.ashx?code={0}&ShowText=1&Height=50", indexString.PadLeft(8, '0'));
+
+                Response.Write(
+                    "<div id = 'pageToPrint' style='margin-top:-50px;'>" +
+                        "<div>" +
+                            "<div style='font-size:25px; font-weight:500;'>" +
+                                "<img src='" + imgBarcode.ImageUrl + "' height='160px' width='500px' style='margin-top:0px; '> " +
+                            "</div>" +
+                            "<div style='font-size:25px; font-weight:500; text-align:right;' >" +
+                                "<img src='" + imgBarcode.ImageUrl + "' height='160px' width='500px' style='margin-top:250px; margin-right:-180px;' class='rotate'> " +
+                            "</div>" +
+                        "</div>" +
+
+                        "<table style='margin-top:250px; margin-bottom:580px; margin-left:40px;'>" +
+                            "<tr>" +
+                                "<td style='font-size:25px; font-weight:500;'> Index String: </td>" +
+                                "<td style='font-size:25px; font-weight:500; padding-left:15px;'>" + indexString.ToUpper() + "</td>" +
+                            "</tr>"
+                 );
+                List<EntryContent> allEntriesList = new List<EntryContent>();
+                allEntriesList = (List<EntryContent>)ViewState["allEntriesList"];
+
+                foreach (var entry in allEntriesList)
+                {
+                    Response.Write(
+                        "<tr>" +
+                            "<td style='font-size:25px; font-weight:500;'>" + entry.labelText + "</td>" +
+                            "<td style='font-size:25px; font-weight:500; padding-left:15px;'>" + entry.text.ToUpper() + "</td>" +
+                        "</tr>"
+                    );
+                }
+                Response.Write(
+                            "<tr>" +
+                                "<td style='font-size:25px; font-weight:500;'>Date Created: </td>" +
+                                "<td style='font-size:25px; font-weight:500; padding-left:15px;'>" + DateTime.Now + "</td>" +
+                            "</tr>" +
+                        "</table >" +
+                    "</div>"
+                );
+
+                // Finally, Print Index sheet.
+                ClientScript.RegisterStartupScript(this.GetType(), "PrintOperation", "printing();", true);
             }
-            else
+            catch (Exception ex)
             {
-                string msg = "Index saved, but there was an unexpected error setting it to PRINTED. Contact system admin.";
-                ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                throw new Exception("Error-10: Issue occured while attempting to setup the printing job. Contact system admin." +
+                                     System.Environment.NewLine + ex.Message);
+            }     
+        }
+
+
+
+        // SET INDEX AS PRINTED IN DB. 
+        protected void setIndexAsPrinted()
+        {
+            try
+            {
+                if (!Page.IsValid) return;
+                var counter = 0;
+                string indexString = (string)ViewState["allEntriesConcat"];
+
+                using (SqlConnection con = Helper.ConnectionObj)
+                {
+                    using (SqlCommand cmd = con.CreateCommand())
+                    {
+                        cmd.CommandText = "UPDATE INDEX_DATA SET PRINTED = @printed WHERE BARCODE = @barcodeIndex";
+                        cmd.Parameters.AddWithValue("@printed", 1);
+                        cmd.Parameters.AddWithValue("@barcodeIndex", indexString);
+                        con.Open();
+                        if (cmd.ExecuteNonQuery() == 1)
+                        {
+                            counter++;
+                            indexSetPrintedMsg.Visible = true;
+                            indexSavedMsg.Visible = false;
+                        }
+                        else
+                        {
+                            string msg = "Error-11: Index saved, but issue occured while attempting to set it to PRINTED. Contact system admin.";
+                            ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                        }
+
+                        // Confirmation msg & back to unprinted indexes gridview
+                        if (counter == 1)
+                        {
+                            ClientScript.RegisterStartupScript(this.GetType(), "fadeoutOperation", "FadeOut2();", true);
+                        }
+                        else
+                        {
+                            string msg = "Error-12: Index saved, but issue occured while attempting to set it to PRINTED. Contact system admin.";
+                            ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                        }
+                    }
+                }
             }
-            con.Close();
-            // Confirmation msg & back to unprinted indexes gridview
-            if (counter == 1)
+            catch (Exception ex)
             {
-                ClientScript.RegisterStartupScript(this.GetType(), "fadeoutOperation", "FadeOut2();", true);
-            }
-            else
-            {
-                string msg = "Error: Index did not set as PRINTED";
-                ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                string msg = "Error-13: Index saved, but issue occured while attempting to set it to PRINTED. Contact system admin.";
+                throw new Exception(msg + System.Environment.NewLine + ex.Message);
             }
         }
 
 
 
-        // SET INDEX AS PRINTED AFTER INDEX SHEET PRINTOUT. FUNCTION
+        // SET INDEX AS PRINTED AFTER INDEX SHEET PRINTOUT 
         protected void setAsPrinted_Click(object sender, EventArgs e)
         {
-            formPanel.Visible = true;
-            setIndexAsPrinted_Click(new object(), new EventArgs());
+            try
+            {
+                formPanel.Visible = true;
+                setIndexAsPrinted();
+            }
+            catch (Exception ex)
+            {
+                string msg = "Error-14: Issue occured while attempting to set job as PRINTED. Contact system admin.";
+                throw new Exception(msg + System.Environment.NewLine + ex.Message);
+            }
         }
 
-        // BACK TO BLANK FORM. FUNCTION
+
+
+        // BACK TO BLANK FORM
         protected void backToForm_Click(object sender, EventArgs e)
         {
             formPanel.Visible = true;
         }
 
 
-        //----HELPER FUNCTION -------------------------------------------------------------------------------------------------
 
-
-        // GET YOUR ASSIGNED JOBS. HELPER FUNCTION
+        // (HIDDEN) 'GENERATE JOBS' CLICKED: GET YOUR ACCESSIBLE JOBS.
         protected void selectJob_Click(Object sender, EventArgs e)
         {
-            SqlConnection con = Helper.ConnectionObj;
-            // First, get current user id via name.
-            string user = Environment.UserName;
-            int jobID = 0;
-            List<int> jobIdList = new List<int>();
-            noJobsFound.Visible = false;
-
-
-            con.Open();
-            int opID = Helper.getUserId(user);
-            if (opID == 0)
+            try
             {
-                noJobsFound.Visible = true;
-                con.Close();
-                return;
-            }
-
-            // Then, get all job IDs accessible to current user from OPERATOR_ACCESS.
-            SqlCommand cmd2 = new SqlCommand("SELECT JOB_ID FROM OPERATOR_ACCESS WHERE OPERATOR_ACCESS.OPERATOR_ID = @userId", con);
-            cmd2.Parameters.AddWithValue("@userId", opID);
-            SqlDataReader reader2 = cmd2.ExecuteReader();
-            if (reader2.HasRows)
-            {
-                while (reader2.Read())
+                // First, get current user id via name.
+                string user = Environment.UserName;
+                List<int> jobIdList = new List<int>();
+                noJobsFound.Visible = false;
+                int jobID = 0;
+                int opID = Helper.getUserId(user);
+                if (opID == 0)
                 {
-                    jobID = (int)reader2.GetValue(0);
-                    jobIdList.Add(jobID);
+                    noJobsFound.Visible = true;
+                    return;
                 }
-                reader2.Close();
-            }
-            else
-            {
-                noJobsFound.Visible = true;
-                con.Close();
-                return;
-            }
 
-            // Now, for each job ID, get corresponding job abbreviation.
-            if (jobIdList.Count > 0)
-            {
-                foreach (var id in jobIdList)
+                // Then, get all job IDs accessible to current operator from OPERATOR_ACCESS.
+                using (SqlConnection con = Helper.ConnectionObj)
                 {
-                    SqlCommand cmd3 = new SqlCommand("SELECT ABBREVIATION FROM JOB WHERE ID = @job", con);
-                    cmd3.Parameters.AddWithValue("@job", id);
-                    SqlDataReader reader3 = cmd3.ExecuteReader();
-                    if (reader3.HasRows)
+                    using (SqlCommand cmd = con.CreateCommand())
                     {
-                        while (reader3.Read())
+                        cmd.CommandText = "SELECT JOB_ID FROM OPERATOR_ACCESS WHERE OPERATOR_ACCESS.OPERATOR_ID = @userId";
+                        cmd.Parameters.AddWithValue("@userId", opID);
+                        con.Open();
+                        using (SqlDataReader reader = cmd.ExecuteReader())
                         {
-                            string jobAbb = (string)reader3.GetValue(0);
-                            selectJob.Items.Add(jobAbb);
-                            selectJob.AutoPostBack = true;
+                            if (reader.HasRows)
+                            {
+                                while (reader.Read())
+                                {
+                                    jobID = (int)reader.GetValue(0);
+                                    jobIdList.Add(jobID);
+                                }
+                            }
+                            else
+                            {   
+                                // If no accessible jobs found, display message.
+                                noJobsFound.Visible = true;
+                                return;
+                            }
                         }
-                        reader3.Close();
                     }
-                    else
+                }
+
+                // Now, for each job ID, get corresponding job abbreviation.
+                if (jobIdList.Count > 0)
+                {
+                    using (SqlConnection con = Helper.ConnectionObj)
                     {
-                        string msg = "Some went wront while getting job abbreviations from job IDs.";
-                        ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
-                        con.Close();
+                        using (SqlCommand cmd = con.CreateCommand())
+                        {
+                            foreach (var id in jobIdList)
+                            {
+                                cmd.CommandText = "SELECT ABBREVIATION FROM JOB WHERE ID = @job";
+                                cmd.Parameters.AddWithValue("@job", id);
+                                con.Open();
+                                var result = cmd.ExecuteScalar();
+                                if (result != null)
+                                {
+                                    // Fill dropdown list
+                                    jobID = (int)result;
+                                    jobIdList.Add(jobID);
+                                }
+                                else
+                                {
+                                    string msg = "Error-15: Issue occured while attempting to retrieve jobs accessible to you. Contact system admin.";
+                                    ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    string msg = "Error-16: Issue occured while attempting to retrieve jobs accessible to you. Contact system admin.";
+                    ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                string msg = "Error-17: Issue occured while attempting to retrieve jobs accessible to you. Contact system admin.";
+                throw new Exception(msg + System.Environment.NewLine + ex.Message);
+            }
+        }
+
+
+
+        // SET COLOR FOR DROPDOWN CONFIGURED JOB ITEMS.
+        private void setDropdownColor()
+        {
+            try
+            {
+                using (SqlConnection con = Helper.ConnectionObj)
+                {
+                    using (SqlCommand cmd = con.CreateCommand())
+                    {
+                        cmd.CommandText = "SELECT ABBREVIATION " +
+                                          "FROM JOB " +
+                                          "INNER JOIN JOB_CONFIG_INDEX ON JOB.ID = JOB_CONFIG_INDEX.JOB_ID";
+                        con.Open();
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (reader.HasRows)
+                            {
+                                while (reader.Read())
+                                {
+                                    foreach (ListItem item in selectJob.Items)
+                                    {
+                                        if (item.Value == (string)reader.GetValue(0))
+                                        {
+                                            item.Attributes.Add("style", "color:Red;");
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                string msg = "Error-18: Issue occured while attempting to color configured jobs in dropdown. Contact system admin.";
+                throw new Exception(msg + System.Environment.NewLine + ex.Message);
+            }
+        }
+
+
+        // GET JOB ID VIA SELECTED JOB ABBREV.
+        private int getJobId(string jobAbb)
+        {
+            try 
+            {
+                int jobID = 0;
+                using(SqlConnection con = Helper.ConnectionObj) 
+                {
+                    using (SqlCommand cmd = con.CreateCommand()) 
+                    {
+                        cmd.CommandText = "SELECT ID FROM JOB WHERE ABBREVIATION = @abb";
+                        cmd.Parameters.AddWithValue("@abb", jobAbb);
+                        con.Open();
+                        var result = cmd.ExecuteScalar();
+                        if (result != null)
+                        {
+                            jobID = (int) result; 
+                            return jobID;
+                        }
+                        else return jobID;
+                    }
+                }  
+            } 
+            catch(Exception ex) 
+            {
+                throw new Exception("Error-01: Issue occured while attempting to identify the selected Job. Contact system admin." +
+                                    System.Environment.NewLine + ex.Message);
+            }
+        }
+
+
+
+        // CLEAR TEXT FIELDS.
+        private void clearFields()
+        {
+            try
+            {
+                List<TextBox> textBoxList = new List<TextBox>();
+                textBoxList.Add(label1Box);
+                textBoxList.Add(label2Box);
+                textBoxList.Add(label3Box);
+                textBoxList.Add(label4Box);
+                textBoxList.Add(label5Box);
+
+                foreach (var textBox in textBoxList)
+                {
+                    if (textBox.Visible == true) textBox.Text = string.Empty;
+                }
+                foreach (var textBox in textBoxList)
+                {
+                    if (textBox.Visible == true)
+                    {
+                        textBox.Focus();
                         return;
                     }
                 }
             }
-            else
+            catch (Exception ex)
             {
-                string msg = "For some reason, jobIdList did not populate";
-                ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + "');", true);
-                con.Close();
-                return;
-            }
-            con.Close();
-        }
-
-
-
-        // SET COLOR FOR DROPDOWN CONFIGURED JOB ITEMS. HELPER FUNCTION
-        private void setDropdownColor()
-        {
-            SqlConnection con = Helper.ConnectionObj;
-            con.Open();
-            SqlCommand cmd4 = new SqlCommand("SELECT ABBREVIATION " +
-                                             "FROM JOB " +
-                                             "INNER JOIN JOB_CONFIG_INDEX ON JOB.ID = JOB_CONFIG_INDEX.JOB_ID", con);
-            SqlDataReader reader4 = cmd4.ExecuteReader();
-            if (reader4.HasRows)
-            {
-                while (reader4.Read())
-                {
-                    foreach (ListItem item in selectJob.Items)
-                    {
-                        if (item.Value == (string)reader4.GetValue(0))
-                        {
-                            item.Attributes.Add("style", "color:Red;");
-                        }
-                    }
-                }
-                reader4.Close();
-                con.Close();
-            }
-            con.Close();
-        }
-
-
-        // GET JOB ID VIA SELECTED JOB ABBREV. HELPER FUNCITON
-        private int getJobId(string jobAbb, SqlConnection con)
-        {
-            int jobID = 0;
-            SqlCommand cmd = new SqlCommand("SELECT ID FROM JOB WHERE ABBREVIATION = @abb", con);
-            cmd.Parameters.AddWithValue("@abb", this.selectJob.SelectedValue);
-            SqlDataReader reader = cmd.ExecuteReader();
-            if (reader.HasRows)
-            {
-                while (reader.Read())
-                {
-                    jobID = (int)reader.GetValue(0);
-                }
-                reader.Close();
-                return jobID ;
-            }
-            else
-            {
-                return jobID;
-            }
-        }
-
-
-        // CLEAR TEXT FIELDS. HELPER FUNCTION
-        private void clearFields()
-        {
-            List<TextBox> textBoxList = new List<TextBox>();
-            textBoxList.Add(label1Box);
-            textBoxList.Add(label2Box);
-            textBoxList.Add(label3Box);
-            textBoxList.Add(label4Box);
-            textBoxList.Add(label5Box);
-
-            foreach (var textBox in textBoxList)
-            {
-                if (textBox.Visible == true) textBox.Text = string.Empty;
-            }
-            foreach (var textBox in textBoxList)
-            {
-                if (textBox.Visible == true)
-                {
-                    textBox.Focus();
-                    return;
-                }
+                string msg = "Error-19: Issue occured while attempting to clear text fields. Contact system admin.";
+                throw new Exception(msg + System.Environment.NewLine + ex.Message);
             }
         }
 
 
 
-        // ALL ENTRIES. HELPER FUNCTION
+        // ALL ENTRIES.
         private List<EntryContent> getEntries()
         {
-            List<EntryControl> controlList = new List<EntryControl>();
-            List<EntryContent> contentList = new List<EntryContent>();
-            EntryControl entry1 = new EntryControl(LABEL1,label1Box);
-            controlList.Add(entry1);
-            EntryControl entry2 = new EntryControl(LABEL2,label2Box);
-            controlList.Add(entry2);
-            EntryControl entry3 = new EntryControl(LABEL3,label3Box);
-            controlList.Add(entry3);
-            EntryControl entry4 = new EntryControl(LABEL4,label4Box);
-            controlList.Add(entry4);
-            EntryControl entry5 = new EntryControl(LABEL5, label5Box);
-            controlList.Add(entry5);
-
-            foreach (var control in controlList)
+            try
             {
-                if(control.textBox.Visible == true && control.textBox.Text == string.Empty)
+                List<EntryControl> controlList = new List<EntryControl>();
+                List<EntryContent> contentList = new List<EntryContent>();
+                EntryControl entry1 = new EntryControl(LABEL1, label1Box);
+                controlList.Add(entry1);
+                EntryControl entry2 = new EntryControl(LABEL2, label2Box);
+                controlList.Add(entry2);
+                EntryControl entry3 = new EntryControl(LABEL3, label3Box);
+                controlList.Add(entry3);
+                EntryControl entry4 = new EntryControl(LABEL4, label4Box);
+                controlList.Add(entry4);
+                EntryControl entry5 = new EntryControl(LABEL5, label5Box);
+                controlList.Add(entry5);
+
+                foreach (var control in controlList)
                 {
-                    // Return empty list
-                    control.textBox.Focus();
-                    contentList = new List<EntryContent>();
-                    return contentList;
+                    if (control.textBox.Visible == true && control.textBox.Text == string.Empty)
+                    {
+                        // Return empty list
+                        control.textBox.Focus();
+                        contentList = new List<EntryContent>();
+                        return contentList;
+                    }
+                    else if (control.textBox.Visible == true && control.textBox.Text != string.Empty)
+                    {
+                        EntryContent sampleEntry = new EntryContent(control.label.Text, control.textBox.Text);
+                        contentList.Add(sampleEntry);
+                    }
                 }
-                else if(control.textBox.Visible == true && control.textBox.Text != string.Empty)
-                {
-                    EntryContent sampleEntry = new EntryContent(control.label.Text, control.textBox.Text);
-                    contentList.Add(sampleEntry);
-                }
+                return contentList;
             }
-            return contentList;
-        }
+            catch (Exception ex)
+            {
+                throw new Exception("Error-03: Issue occured while retrieving entered entries. Contact system admin." +
+                                    System.Environment.NewLine + ex.Message);
+            }
+        }    
     }
 }
+
