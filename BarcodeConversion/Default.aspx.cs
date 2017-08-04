@@ -25,12 +25,13 @@ namespace BarcodeConversion
         }
 
 
-        // 'JOB ABBREVIATION' DROPDOWN CLICKED: SET & DISPLAY CONTROLS OF SELECTED JOB. 
+        // 'JOB ABBREVIATION' DROPDOWN: SET & DISPLAY CONTROLS OF SELECTED JOB. 
         protected void onJobSelect(object sender, EventArgs e)
         {
             try
             {
                 // Set stage
+                indexSavedMsg.Visible = false;
                 generateIndexSection.Visible = false;
                 indexCreationSection.Visible = false;
                 LABEL1.Visible = false;
@@ -124,6 +125,7 @@ namespace BarcodeConversion
                                             label5Box.Visible = true;
                                         }
                                     }
+                                    generateIndexSection.Visible = true;
                                 }
                                 else
                                 {
@@ -146,7 +148,7 @@ namespace BarcodeConversion
 
 
         // 'GENERATE INDEX' CLICKED: GENERATE INDEX AND BARCODE FROM FORM DATA.
-        protected void btnGenerateBarcode_Click(object sender, EventArgs e)
+        private void generateBarcode()
         {
             try
             {
@@ -175,16 +177,12 @@ namespace BarcodeConversion
                     // Making the Index string 
                     ViewState["allEntriesConcat"] = selectJob.SelectedValue.ToUpper() + year + julianDay + time;
                 }
-                var showTextValue = chkShowText.Checked ? "1" : "0";
                 string indexString = (string)ViewState["allEntriesConcat"];
-                textToConvert.Text = indexString.ToUpper();
                 indexSavedMsg.Visible = false;
                 generateIndexSection.Visible = true;
 
                 // Convert index to barcode
-                imgBarcode.ImageUrl = string.Format("ShowCode39Barcode.ashx?code={0}&ShowText={1}&Thickness={2}",
-                                                    indexString,
-                                                    showTextValue, 1);
+                // imgBarcode.ImageUrl = string.Format("ShowCode39Barcode.ashx?code={0}&ShowText={1}&Thickness={2}",indexString,showTextValue, 1);
             }
             catch (Exception ex)
             {
@@ -202,6 +200,7 @@ namespace BarcodeConversion
 
             try
             {
+                generateBarcode();
                 // First, get current user id via name.
                 string user = Environment.UserName;
                 int opID = Helper.getUserId(user);
@@ -251,7 +250,6 @@ namespace BarcodeConversion
                             indexSavedMsg.Visible = true;
                             ClientScript.RegisterStartupScript(this.GetType(), "fadeoutOperation", "FadeOut();", true);
                             clearFields();
-                            generateIndexSection.Visible = false;
                         }
                         else
                         {
@@ -287,6 +285,7 @@ namespace BarcodeConversion
                 // Clear page
                 formPanel.Visible = false;
                 indexSavedMsg.Visible = false;
+                Image imgBarcode = new Image();
 
                 // Write Index sheet page content
                 string indexString = (string)ViewState["allEntriesConcat"];
@@ -466,11 +465,11 @@ namespace BarcodeConversion
                 // Now, for each job ID, get corresponding job abbreviation.
                 if (jobIdList.Count > 0)
                 {
-                    using (SqlConnection con = Helper.ConnectionObj)
+                    foreach (var id in jobIdList)
                     {
-                        using (SqlCommand cmd = con.CreateCommand())
+                        using (SqlConnection con = Helper.ConnectionObj)
                         {
-                            foreach (var id in jobIdList)
+                            using (SqlCommand cmd = con.CreateCommand())
                             {
                                 cmd.CommandText = "SELECT ABBREVIATION FROM JOB WHERE ID = @job";
                                 cmd.Parameters.AddWithValue("@job", id);
@@ -479,8 +478,8 @@ namespace BarcodeConversion
                                 if (result != null)
                                 {
                                     // Fill dropdown list
-                                    jobID = (int)result;
-                                    jobIdList.Add(jobID);
+                                    string jobAbb = result.ToString();
+                                    selectJob.Items.Add(jobAbb);
                                 }
                                 else
                                 {
@@ -502,7 +501,7 @@ namespace BarcodeConversion
             catch (Exception ex)
             {
                 string msg = "Error-17: Issue occured while attempting to retrieve jobs accessible to you. Contact system admin.";
-                throw new Exception(msg + System.Environment.NewLine + ex.Message);
+                ClientScript.RegisterStartupScript(this.GetType(), "myalert", "alert('" + msg + ex.Message + "');", true);
             }
         }
 
